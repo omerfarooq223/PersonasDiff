@@ -1,0 +1,174 @@
+openapi: 3.1.0
+info:
+  title: AI Parallel Web API
+  version: 0.1.0
+  description: Day 1 contract baseline. Changes require contract review.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://staging-api.example.invalid
+    description: Replace with the approved staging endpoint
+tags:
+  - name: Health
+    description: Deployment liveness and readiness checks.
+  - name: Runs
+    description: Asynchronous comparison-run lifecycle.
+paths:
+  /health/live:
+    get:
+      summary: Report process liveness
+      operationId: getLiveness
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Process is alive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /health/ready:
+    get:
+      summary: Report traffic readiness
+      operationId: getReadiness
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Service is ready to receive traffic.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: A required dependency is unavailable.
+  /v1/runs:
+    post:
+      summary: Queue a comparison run
+      operationId: createRun
+      tags: [Runs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 16
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRunRequest'
+      responses:
+        '202':
+          description: Run accepted for asynchronous execution.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '409':
+          $ref: '#/components/responses/Problem'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Problem:
+      description: Request failed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [service, status, timestamp]
+      properties:
+        service:
+          type: string
+        status:
+          const: ok
+        timestamp:
+          type: string
+          format: date-time
+    ReadinessResponse:
+      type: object
+      additionalProperties: false
+      required: [service, status, timestamp, environment, release]
+      properties:
+        service:
+          type: string
+        status:
+          const: ready
+        timestamp:
+          type: string
+          format: date-time
+        environment:
+          enum: [development, staging, production, test]
+        release:
+          type: string
+    CreateRunRequest:
+      type: object
+      additionalProperties: false
+      required: [journeyVersionId, personaVersionIds, surfaceId]
+      properties:
+        journeyVersionId:
+          type: string
+          format: uuid
+        personaVersionIds:
+          type: array
+          minItems: 2
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        surfaceId:
+          type: string
+          format: uuid
+    Run:
+      type: object
+      additionalProperties: false
+      required: [id, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        createdAt:
+          type: string
+          format: date-time
+    RunStatus:
+      type: string
+      enum: [draft, queued, running, completed, partially_completed, failed, cancelled]
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, requestId]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        requestId:
+          type: string

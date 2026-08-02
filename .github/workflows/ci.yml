@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Static checks, contracts, and tests
+        run: npm run check
+      - name: Build workspaces
+        run: npm run build
+      - name: Validate local orchestration
+        run: docker compose -f infra/compose/docker-compose.yml config --quiet
+
+  local-stack-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start stack
+        run: docker compose -f infra/compose/docker-compose.yml up --build -d --wait
+      - name: Verify health endpoints
+        run: |
+          curl --fail --silent --show-error http://localhost:3000/health/live
+          curl --fail --silent --show-error http://localhost:3000/health/ready
+          curl --fail --silent --show-error http://localhost:4300/health
+      - name: Capture logs
+        if: failure()
+        run: docker compose -f infra/compose/docker-compose.yml logs --no-color
+      - name: Stop stack
+        if: always()
+        run: docker compose -f infra/compose/docker-compose.yml down --volumes

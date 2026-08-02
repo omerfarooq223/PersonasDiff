@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-parallel-web-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-parallel-web-api
+  template:
+    metadata:
+      labels:
+        app: ai-parallel-web-api
+    spec:
+      containers:
+        - name: api
+          image: REPLACE_WITH_REGISTRY/ai-parallel-web-api:REPLACE_WITH_IMMUTABLE_SHA
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: ai-parallel-web-staging
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3000
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

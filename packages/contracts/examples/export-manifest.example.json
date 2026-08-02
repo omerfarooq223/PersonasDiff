@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "d66b85c4-f327-454c-9de3-d50723980f91",
+  "createdAt": "2026-08-02T10:05:00.000Z",
+  "configurationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "artifacts": [
+    {
+      "path": "personas/control/steps/01/screenshot.png",
+      "mediaType": "image/png",
+      "bytes": 1024,
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ],
+  "warnings": []
+}

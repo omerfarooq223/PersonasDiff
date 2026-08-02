@@ -1,0 +1,9 @@
+flowchart LR
+  operator["Authorized operator"] --> web["AI Parallel Web UI"]
+  web --> api["Control-plane API"]
+  api --> stores["Metadata, queue, and evidence stores"]
+  stores --> worker["Isolated browser worker"]
+  worker --> surface["One approved public surface"]
+  worker -. "blocked by default" .-> other["All other destinations"]
+  api --> telemetry["Logs, metrics, and traces"]
+  worker --> telemetry

@@ -1,0 +1,11 @@
+.git
+.github
+.DS_Store
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+artifacts
+docs/evidence
+*.log

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/ai-parallel-web/event/1.0.0",
+  "title": "AI Parallel Web Domain Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "runId",
+    "schemaVersion",
+    "correlationId",
+    "payload"
+  ],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": {
+      "type": "string",
+      "enum": [
+        "run.queued",
+        "run.started",
+        "step.completed",
+        "run.completed",
+        "run.partially_completed",
+        "run.failed",
+        "run.cancelled"
+      ]
+    },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "runId": { "type": "string", "format": "uuid" },
+    "schemaVersion": { "const": "1.0.0" },
+    "correlationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "causationId": { "type": ["string", "null"], "maxLength": 128 },
+    "payload": { "type": "object" }
+  }
+}

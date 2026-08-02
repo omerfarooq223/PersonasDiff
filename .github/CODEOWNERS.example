@@ -1,0 +1,7 @@
+# Replace handles, then rename this file to CODEOWNERS before enabling required review.
+/docs/day-1/surface-review.md @REPLACE_PRODUCT_OWNER @REPLACE_SECURITY_REVIEWER
+/docs/day-1/data-retention.md @REPLACE_PRODUCT_OWNER @REPLACE_SECURITY_REVIEWER
+/docs/adr/ @REPLACE_TECH_LEAD
+/infra/ @REPLACE_SRE_OWNER
+/packages/contracts/ @REPLACE_TECH_LEAD @REPLACE_BACKEND_OWNER
+/apps/browser-spike/ @REPLACE_BROWSER_OWNER @REPLACE_SECURITY_REVIEWER

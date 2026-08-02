@@ -1,0 +1,26 @@
+id: replace-with-stable-surface-id
+status: pending_review
+displayName: Replace with approved surface name
+owner:
+  product: replace-with-name
+  operational: replace-with-name
+policy:
+  origin: https://example.invalid
+  allowedPathPrefixes:
+    - /approved-path
+  allowedMethods:
+    - GET
+  requestsPerMinute: 12
+  maxConcurrentContexts: 2
+  redirects:
+    revalidateEveryHop: true
+    maxHops: 5
+  blockPrivateNetworks: true
+review:
+  termsUrl: https://example.invalid/terms
+  robotsUrl: https://example.invalid/robots.txt
+  reviewedAt: null
+  reviewedBy: null
+  writtenPermissionReference: null
+  decision: pending
+  notes: 'Do not run the public-surface spike until this decision is approved.'

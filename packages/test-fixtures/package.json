@@ -1,0 +1,11 @@
+{
+  "name": "@ai-parallel-web/test-fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

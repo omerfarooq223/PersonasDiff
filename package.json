@@ -1,0 +1,43 @@
+{
+  "name": "ai-parallel-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Controlled, evidence-first comparison of approved public web journeys.",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run contracts:validate",
+    "clean": "npm run clean --workspaces --if-present",
+    "contracts:validate": "redocly lint packages/contracts/openapi/openapi.yaml && vitest run tests/contract/schemas.test.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "spike": "npm run spike --workspace=@ai-parallel-web/browser-spike",
+    "stack:down": "docker compose -f infra/compose/docker-compose.yml down",
+    "stack:logs": "docker compose -f infra/compose/docker-compose.yml logs -f",
+    "stack:up": "docker compose -f infra/compose/docker-compose.yml up --build -d --wait",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc -p tsconfig.tests.json --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@redocly/cli": "^2.0.0",
+    "@types/node": "^24.0.0",
+    "ajv": "^8.0.0",
+    "ajv-formats": "^3.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.0.0"
+  }
+}

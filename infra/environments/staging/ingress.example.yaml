@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-parallel-web-api
+spec:
+  tls:
+    - hosts: [staging-api.example.invalid]
+      secretName: replace-with-managed-tls-secret
+  rules:
+    - host: staging-api.example.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-parallel-web-api
+                port:
+                  name: http

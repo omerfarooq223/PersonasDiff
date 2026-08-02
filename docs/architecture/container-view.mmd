@@ -1,0 +1,12 @@
+flowchart TB
+  web["Web UI"] --> api["Fastify API"]
+  api --> postgres[("PostgreSQL: authoritative metadata")]
+  api --> redis[("Redis: queue coordination")]
+  api --> s3[("S3-compatible immutable evidence")]
+  redis --> browser["Playwright worker pool"]
+  browser --> allowed["Approved origin/path only"]
+  browser --> s3
+  browser --> redis
+  redis --> compare["Comparison worker"]
+  compare --> postgres
+  compare --> s3

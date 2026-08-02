@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/ai-parallel-web/export-manifest/1.0.0",
+  "title": "AI Parallel Web Export Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "createdAt", "configurationHash", "artifacts", "warnings"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "runId": { "type": "string", "format": "uuid" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "configurationHash": { "$ref": "#/$defs/sha256" },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "mediaType", "bytes", "sha256"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^[^/].+" },
+          "mediaType": { "type": "string" },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
