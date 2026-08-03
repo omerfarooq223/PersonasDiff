@@ -1,6 +1,6 @@
 # ADR-0005: Independently deployable API and worker services
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, SRE
 - **Reviewers:** Security/Privacy, Browser Engineer

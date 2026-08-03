@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: REPLACE_WITH_REGISTRY/ai-parallel-web-api:REPLACE_WITH_IMMUTABLE_SHA
+          image: ghcr.io/parallelweb/ai-parallel-web-api:staging
           ports:
             - containerPort: 3000
           envFrom:

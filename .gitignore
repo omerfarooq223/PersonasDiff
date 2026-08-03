@@ -17,3 +17,5 @@ test-results/
 
 *.log
 npm-debug.log*
+
+*.tsbuildinfo

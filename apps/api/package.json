@@ -11,7 +11,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "fastify": "^5.0.0"
+    "@ai-parallel-web/auth": "0.1.0",
+    "@ai-parallel-web/db": "0.1.0",
+    "@ai-parallel-web/domain": "0.1.0",
+    "@ai-parallel-web/storage": "0.1.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.7.0"
   },
   "devDependencies": {
     "tsx": "^4.0.0"

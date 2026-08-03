@@ -1,0 +1,31 @@
+id: 00000000-0000-4000-8000-000000000010
+status: approved
+displayName: Local deterministic fixture surface
+owner:
+  product: ParallelWeb Product
+  operational: ParallelWeb Tech Lead
+policy:
+  origin: http://localhost:4300
+  allowedPathPrefixes:
+    - /fixture
+    - /robots.txt
+    - /health
+  allowedMethods:
+    - GET
+  requestsPerMinute: 12
+  maxConcurrentContexts: 2
+  redirects:
+    revalidateEveryHop: true
+    maxHops: 5
+  blockPrivateNetworks: true
+review:
+  termsUrl: http://localhost:4300/robots.txt
+  robotsUrl: http://localhost:4300/robots.txt
+  reviewedAt: '2026-08-02T12:00:00Z'
+  reviewedBy: Security/Privacy Reviewer
+  writtenPermissionReference: internal-deterministic-fixture-only
+  decision: approved
+  notes: >-
+    Approved for automated MVP development and CI. This surface serves only the
+    deterministic local fixture; no public production surface is authorized until
+    a separate surface review is completed.

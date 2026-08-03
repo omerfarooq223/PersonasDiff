@@ -1,6 +1,6 @@
 # ADR-0001: One fresh browser context per persona execution
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, Browser Engineer
 - **Reviewers:** Security/Privacy, SRE

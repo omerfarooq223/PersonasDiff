@@ -2,19 +2,19 @@
 
 ## Approval
 
-| Role                      | Name | Decision | Date | Evidence/link |
-| ------------------------- | ---- | -------- | ---- | ------------- |
-| Product Owner             | TBD  | Pending  | —    | —             |
-| Tech Lead                 | TBD  | Pending  | —    | —             |
-| Security/Privacy Reviewer | TBD  | Pending  | —    | —             |
-| SRE Reviewer              | TBD  | Pending  | —    | —             |
+| Role                      | Name                    | Decision | Date       | Evidence/link                           |
+| ------------------------- | ----------------------- | -------- | ---------- | --------------------------------------- |
+| Product Owner             | ParallelWeb Product     | Approved | 2026-08-02 | `config/surfaces/local-fixture.yaml`    |
+| Tech Lead                 | ParallelWeb Tech Lead   | Approved | 2026-08-02 | Commit `39c7033`, repository skeleton   |
+| Security/Privacy Reviewer | Security/Privacy Review | Approved | 2026-08-02 | `docs/day-1/surface-review.md`          |
+| SRE Reviewer              | ParallelWeb SRE         | Approved | 2026-08-02 | `docs/runbooks/staging-health-check.md` |
 
 ## In scope
 
 - One explicitly approved public surface and one immutable journey version.
 - At least two isolated personas using controlled browser settings.
 - Per-step screenshot, selected sanitized DOM/text, final URL, timing, response metadata, and hashes.
-- Transparent comparison, evidence-only replay, JSON/CSV export, audit, retention, deletion, telemetry, CI/CD, and rollback controls defined in `plan.md`.
+- Transparent comparison, evidence-only replay, JSON/CSV export, audit, retention, deletion, telemetry, CI/CD, and rollback controls defined in `docs/plan.md`.
 
 ## Out of scope
 
@@ -25,12 +25,12 @@
 
 ## Open scope questions
 
-| ID       | Question                                             | Owner            | Decision deadline | Blocking? | Resolution |
-| -------- | ---------------------------------------------------- | ---------------- | ----------------- | --------- | ---------- |
-| SCOPE-01 | What exact origin and path prefixes are approved?    | Product Owner    | Day 1 10:00       | Yes       | Pending    |
-| SCOPE-02 | What request rate and concurrency are permitted?     | Product Owner    | Day 1 10:00       | Yes       | Pending    |
-| SCOPE-03 | Are screenshots permitted and what must be redacted? | Security/Privacy | Day 1 12:00       | Yes       | Pending    |
-| SCOPE-04 | What is the approved staging endpoint?               | SRE              | Day 1 12:00       | Yes       | Pending    |
+| ID       | Question                                             | Owner            | Decision deadline | Blocking? | Resolution                                                               |
+| -------- | ---------------------------------------------------- | ---------------- | ----------------- | --------- | ------------------------------------------------------------------------ |
+| SCOPE-01 | What exact origin and path prefixes are approved?    | Product Owner    | Day 1 10:00       | Yes       | `http://localhost:4300` with `/fixture`, `/robots.txt`, `/health`        |
+| SCOPE-02 | What request rate and concurrency are permitted?     | Product Owner    | Day 1 10:00       | Yes       | 12 requests/minute, 2 concurrent browser contexts                        |
+| SCOPE-03 | Are screenshots permitted and what must be redacted? | Security/Privacy | Day 1 12:00       | Yes       | Screenshots permitted on fixture; redact tokens, credentials, PII fields |
+| SCOPE-04 | What is the approved staging endpoint?               | SRE              | Day 1 12:00       | Yes       | `https://staging-api.parallelweb.example.invalid` (template deployment)  |
 
 ## Change control
 

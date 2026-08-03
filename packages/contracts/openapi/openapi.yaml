@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: AI Parallel Web API
   version: 0.1.0
-  description: Day 1 contract baseline. Changes require contract review.
+  description: Day 2 API baseline with run orchestration and authorization controls.
 servers:
   - url: http://localhost:3000
     description: Local development
@@ -78,6 +78,89 @@ paths:
           $ref: '#/components/responses/Problem'
         '409':
           $ref: '#/components/responses/Problem'
+    get:
+      summary: List comparison runs
+      operationId: listRuns
+      tags: [Runs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Paginated run list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunList'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+  /v1/runs/{id}:
+    get:
+      summary: Get a comparison run
+      operationId: getRun
+      tags: [Runs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunDetail'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+  /v1/runs/{id}/cancel:
+    post:
+      summary: Cancel a comparison run
+      operationId: cancelRun
+      tags: [Runs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+        '409':
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -112,7 +195,18 @@ components:
         service:
           type: string
         status:
-          const: ready
+          type: string
+          enum: [ready, degraded]
+        checks:
+          type: object
+          additionalProperties: false
+          properties:
+            database:
+              type: boolean
+            redis:
+              type: boolean
+            storage:
+              type: boolean
         timestamp:
           type: string
           format: date-time
@@ -151,6 +245,40 @@ components:
         createdAt:
           type: string
           format: date-time
+    RunDetail:
+      allOf:
+        - $ref: '#/components/schemas/Run'
+        - type: object
+          required: [correlationId, surfaceId, journeyVersionId, personaVersionIds]
+          properties:
+            correlationId:
+              type: string
+            surfaceId:
+              type: string
+              format: uuid
+            journeyVersionId:
+              type: string
+              format: uuid
+            personaVersionIds:
+              type: array
+              items:
+                type: string
+                format: uuid
+    RunList:
+      type: object
+      additionalProperties: false
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Run'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
     RunStatus:
       type: string
       enum: [draft, queued, running, completed, partially_completed, failed, cancelled]

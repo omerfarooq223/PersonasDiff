@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 RUN npm install --ignore-scripts
-RUN npm run build --workspace=${SERVICE_WORKSPACE}
+RUN npm run build
 
 FROM node:24-bookworm-slim AS runtime
 

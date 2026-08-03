@@ -1,6 +1,6 @@
 # ADR-0002: Immutable, content-hashed evidence
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, Backend Engineer
 - **Reviewers:** Security/Privacy, SRE

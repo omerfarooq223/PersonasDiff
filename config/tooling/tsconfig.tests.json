@@ -4,5 +4,5 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["apps/**/test/**/*.ts", "packages/**/test/**/*.ts", "tests/**/*.ts"]
+  "include": ["../../apps/**/test/**/*.ts", "../../packages/**/test/**/*.ts", "../../tests/**/*.ts"]
 }

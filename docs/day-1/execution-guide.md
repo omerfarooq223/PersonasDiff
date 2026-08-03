@@ -91,7 +91,7 @@ Run independent workstreams in parallel. The public-surface spike remains blocke
 - **Action:** Use `AC-01` through `AC-10` in `docs/day-1/traceability-matrix.md`. Link each gate to an owner, implementation boundary, test, evidence location, due day, and status.
 - **Accomplishes:** Makes every release claim traceable to executable proof.
 - **Why it matters:** Teams otherwise discover late that “implemented” and “accepted” mean different things.
-- **Acceptance:** Every release gate in `plan.md` appears exactly once and has one accountable owner.
+- **Acceptance:** Every release gate in `docs/plan.md` appears exactly once and has one accountable owner.
 
 ### 2.2 Define the test that proves each gate
 
@@ -154,7 +154,7 @@ Run independent workstreams in parallel. The public-surface spike remains blocke
 
 ### 3.4 Enable formatting, linting, and strict type checking
 
-- **Action:** Use `.editorconfig`, Prettier, flat-config ESLint, `tsconfig.base.json`, and per-workspace TypeScript configs.
+- **Action:** Use `.editorconfig`, Prettier, flat-config ESLint, `config/tooling/tsconfig.base.json`, and per-workspace TypeScript configs.
 - **Accomplishes:** Establishes one automated quality baseline.
 - **Why it matters:** Contract and worker changes happen quickly; inconsistent checks increase integration risk.
 - **Acceptance:** `npm run format:check`, `npm run lint`, and `npm run typecheck` all exit zero.
@@ -397,22 +397,23 @@ ai-parallel-web/
 ├── .npmrc
 ├── .nvmrc
 ├── .prettierignore
-├── DAY1_EXECUTION_GUIDE.md
 ├── README.md
 ├── package.json
 ├── package-lock.json                         # generated and committed on Day 1
-├── plan.md
-├── tsconfig.base.json
-├── tsconfig.tests.json
-├── eslint.config.mjs
-├── prettier.config.mjs
-├── redocly.yaml
-├── vitest.config.ts
+├── config/
+│   ├── environments/                         # env templates for compose and deploy
+│   ├── surfaces/                             # approved surface policies
+│   └── tooling/                              # eslint, prettier, vitest, tsconfig, redocly
 ├── .github/
-│   ├── CODEOWNERS.example                    # replace handles, then rename
+│   ├── CODEOWNERS
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── workflows/
 │       └── ci.yml
+├── docs/
+│   ├── plan.md
+│   ├── day-1/
+│   │   └── execution-guide.md
+│   └── adr/
 ├── apps/
 │   ├── api/
 │   │   ├── package.json

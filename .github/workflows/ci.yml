@@ -43,6 +43,8 @@ jobs:
           curl --fail --silent --show-error http://localhost:3000/health/live
           curl --fail --silent --show-error http://localhost:3000/health/ready
           curl --fail --silent --show-error http://localhost:4300/health
+      - name: Integration tests against stack
+        run: RUN_STACK_TESTS=true npm test -- tests/integration
       - name: Capture logs
         if: failure()
         run: docker compose -f infra/compose/docker-compose.yml logs --no-color

@@ -1,6 +1,6 @@
 # ADR-0003: Versioned, decomposed comparison metrics
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-02
 - **Owners:** Product Owner, Tech Lead
 - **Reviewers:** Security/Privacy/Ethics, QA

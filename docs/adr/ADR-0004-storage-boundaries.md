@@ -1,6 +1,6 @@
 # ADR-0004: PostgreSQL metadata, S3-compatible evidence, Redis queue
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, Backend Engineer
 - **Reviewers:** Security/Privacy, SRE
