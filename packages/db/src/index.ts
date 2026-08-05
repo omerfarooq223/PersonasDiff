@@ -28,6 +28,13 @@ export {
   insertStepEvidence,
   logDeletionAudit,
 } from './repositories/evidence.js';
+export {
+  getComparisonResultById,
+  getComparisonResultsByRun,
+  insertComparisonResult,
+} from './repositories/comparison.js';
+
+export type { ComparisonResult } from '@ai-parallel-web/comparison';
 export { seedDevelopmentData } from './seed.js';
 export {
   seedIds,
