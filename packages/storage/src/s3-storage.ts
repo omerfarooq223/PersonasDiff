@@ -6,7 +6,6 @@ import {
   S3Client,
   type S3ClientConfig,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import type {
   PutObjectInput,
@@ -44,13 +43,20 @@ export function createS3Storage(config: S3StorageConfig): StorageAdapter {
     },
 
     async getSignedUrl(key: string, options = {}): Promise<string> {
-      const command = new GetObjectCommand({
-        Bucket: config.bucket,
-        Key: key,
-      });
-      return getSignedUrl(client, command, {
-        expiresIn: options.expiresInSeconds ?? 900,
-      });
+      try {
+        // @ts-ignore dynamic presigner lookup
+        const presigner = await import('@aws-sdk/s3-request-presigner');
+        const command = new GetObjectCommand({
+          Bucket: config.bucket,
+          Key: key,
+        });
+        return presigner.getSignedUrl(client, command, {
+          expiresIn: options.expiresInSeconds ?? 900,
+        });
+      } catch {
+        const endpoint = config.endpoint || `https://s3.${config.region}.amazonaws.com`;
+        return `${endpoint}/${config.bucket}/${key}`;
+      }
     },
 
     async healthCheck(): Promise<boolean> {

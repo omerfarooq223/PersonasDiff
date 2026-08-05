@@ -20,5 +20,24 @@ export {
   findSurfaceById,
 } from './repositories/surfaces.js';
 export { findUserById, findUserByToken } from './repositories/users.js';
+export {
+  deleteRunRecords,
+  getRunArtifactStorageKeys,
+  getStepEvidenceByRun,
+  insertRunManifest,
+  insertStepEvidence,
+  logDeletionAudit,
+} from './repositories/evidence.js';
 export { seedDevelopmentData } from './seed.js';
-export { seedIds, seedTokens, type CreateRunInput, type UserRole, type UserRow } from './types.js';
+export {
+  seedIds,
+  seedTokens,
+  type CreateRunInput,
+  type DeletionAuditRow,
+  type RedactionAuditRow,
+  type RunManifestRow,
+  type StepArtifactRow,
+  type StepEvidenceRow,
+  type UserRole,
+  type UserRow,
+} from './types.js';

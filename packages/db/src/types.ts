@@ -1,4 +1,5 @@
 import type { RunStatus } from '@ai-parallel-web/domain';
+import type { EvidenceState } from '@ai-parallel-web/contracts';
 
 export type UserRole = 'viewer' | 'operator' | 'admin';
 
@@ -70,6 +71,67 @@ export interface RunPersonaRow {
   persona_version_id: string;
   status: RunStatus;
   created_at: Date;
+}
+
+export interface StepEvidenceRow {
+  id: string;
+  run_id: string;
+  persona_version_id: string;
+  step_id: string;
+  step_index: number;
+  timestamp_utc: Date;
+  monotonic_duration_ns: string;
+  final_url: string;
+  http_status: number;
+  http_ok: boolean;
+  overall_state: EvidenceState;
+  payload: Record<string, unknown>;
+  created_at: Date;
+}
+
+export interface StepArtifactRow {
+  id: string;
+  step_evidence_id: string;
+  artifact_type: string;
+  storage_key: string;
+  sha256: string;
+  size_bytes: number;
+  mime_type: string;
+  state: EvidenceState;
+  created_at: Date;
+}
+
+export interface RunManifestRow {
+  id: string;
+  run_id: string;
+  schema_version: string;
+  total_steps: number;
+  completed_steps: number;
+  completeness_percentage: number;
+  manifest_sha256: string;
+  manifest_payload: Record<string, unknown>;
+  created_at: Date;
+}
+
+export interface RedactionAuditRow {
+  id: string;
+  run_id: string;
+  step_index: number;
+  target_type: string;
+  identifier: string;
+  matches_found: number;
+  action_taken: string;
+  created_at: Date;
+}
+
+export interface DeletionAuditRow {
+  id: string;
+  run_id: string;
+  tenant_id: string | null;
+  deleted_artifact_count: number;
+  status: string;
+  error_message: string | null;
+  deleted_at: Date;
 }
 
 export interface AuditEventInput {
