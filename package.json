@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Controlled, evidence-first comparison of approved public web journeys.",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=24"
   },
   "workspaces": [
     "apps/*",
