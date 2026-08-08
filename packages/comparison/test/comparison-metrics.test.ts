@@ -1,12 +1,16 @@
 /**
  * Tests for Comparison Metrics using Golden Fixtures
- * 
+ *
  * Verifies that all golden cases match expected outputs and that
  * repeated calculation is byte-for-byte deterministic.
  */
 
 import { describe, it, expect } from 'vitest';
-import { ComparisonMetrics, DEFAULT_THRESHOLDS, NormalizationEngine } from '@ai-parallel-web/comparison';
+import {
+  ComparisonMetrics,
+  DEFAULT_THRESHOLDS,
+  NormalizationEngine,
+} from '@ai-parallel-web/comparison';
 import {
   IDENTICAL_FIXTURE,
   REORDERED_FIXTURE,
@@ -24,7 +28,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should detect identical content', () => {
       const result = metrics.compareElementPresence(
         IDENTICAL_FIXTURE.personaA,
-        IDENTICAL_FIXTURE.personaB
+        IDENTICAL_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(IDENTICAL_FIXTURE.expected.elementPresenceSimilarity);
@@ -34,7 +38,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should have perfect text similarity', () => {
       const result = metrics.compareTextSimilarity(
         IDENTICAL_FIXTURE.personaA,
-        IDENTICAL_FIXTURE.personaB
+        IDENTICAL_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(IDENTICAL_FIXTURE.expected.textSimilarity);
@@ -44,7 +48,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should have no redirect difference', () => {
       const result = metrics.compareRedirectPath(
         IDENTICAL_FIXTURE.personaA,
-        IDENTICAL_FIXTURE.personaB
+        IDENTICAL_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(IDENTICAL_FIXTURE.expected.hasRedirectDifference);
@@ -54,7 +58,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should have small timing delta', () => {
       const result = metrics.compareTimingDelta(
         IDENTICAL_FIXTURE.personaA,
-        IDENTICAL_FIXTURE.personaB
+        IDENTICAL_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(0);
@@ -66,7 +70,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should detect identical element presence', () => {
       const result = metrics.compareElementPresence(
         REORDERED_FIXTURE.personaA,
-        REORDERED_FIXTURE.personaB
+        REORDERED_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(REORDERED_FIXTURE.expected.elementPresenceSimilarity);
@@ -78,7 +82,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
       const result = metrics.compareRankShift(
         REORDERED_FIXTURE.personaA,
         REORDERED_FIXTURE.personaB,
-        'items'
+        'items',
       );
 
       // The rank shift should be calculated based on the original order
@@ -92,7 +96,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
       const result = metrics.compareNumericDelta(
         PRICE_CHANGED_FIXTURE.personaA,
         PRICE_CHANGED_FIXTURE.personaB,
-        'price'
+        'price',
       );
 
       expect(result.result).toBeCloseTo(PRICE_CHANGED_FIXTURE.expected.deltaPercentage / 100, 2);
@@ -104,7 +108,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should detect redirect difference', () => {
       const result = metrics.compareRedirectPath(
         REDIRECTED_FIXTURE.personaA,
-        REDIRECTED_FIXTURE.personaB
+        REDIRECTED_FIXTURE.personaB,
       );
 
       expect(result.result).toBe(REDIRECTED_FIXTURE.expected.hasRedirectDifference);
@@ -115,14 +119,14 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should detect missing artifacts', () => {
       const result = metrics.compareElementPresence(
         PARTIALLY_MISSING_FIXTURE.personaA,
-        PARTIALLY_MISSING_FIXTURE.personaB
+        PARTIALLY_MISSING_FIXTURE.personaB,
       );
 
       // The element presence metric compares artifact types, not their states
       // Both personas have the same artifact types (screenshot, dom_snapshot)
       // so the Jaccard similarity should be 1.0
       expect(result.result).toBe(PARTIALLY_MISSING_FIXTURE.expected.elementPresenceSimilarity);
-      
+
       // The warnings should indicate evidence state issues
       // This might not trigger in the element presence metric directly
       // but would be captured in the overall evidence state
@@ -134,7 +138,7 @@ describe('ComparisonMetrics - Golden Fixtures', () => {
     it('should detect content difference', () => {
       const result = metrics.compareTextSimilarity(
         SUBSTITUTED_FIXTURE.personaA,
-        SUBSTITUTED_FIXTURE.personaB
+        SUBSTITUTED_FIXTURE.personaB,
       );
 
       expect(result.result).toBeLessThan(1.0);
@@ -148,12 +152,12 @@ describe('ComparisonMetrics - Deterministic Calculation', () => {
   const metrics = new ComparisonMetrics(normalizationEngine, DEFAULT_THRESHOLDS, '1.0.0');
 
   it('should produce byte-for-byte identical results on repeated calculation', () => {
-    const results: any[] = [];
+    const results: string[] = [];
 
     for (let i = 0; i < 10; i++) {
       const result = metrics.compareTextSimilarity(
         IDENTICAL_FIXTURE.personaA,
-        IDENTICAL_FIXTURE.personaB
+        IDENTICAL_FIXTURE.personaB,
       );
       results.push(JSON.stringify(result));
     }

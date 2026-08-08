@@ -7,7 +7,7 @@ import type {
   RunProgressEvent,
   RetryConfig,
 } from '@ai-parallel-web/contracts';
-import { BrowserManager } from './browser-manager.js';
+import type { BrowserManager } from './browser-manager.js';
 import { applySecurityPolicy } from './policy-enforcer.js';
 import { StepExecutor } from './step-executor.js';
 import { executeWithRetry, DEFAULT_RETRY_CONFIG } from './retry-handler.js';

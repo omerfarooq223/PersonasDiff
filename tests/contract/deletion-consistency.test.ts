@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { RetentionDeletionWorkflow, DatabaseDeletionAdapter } from '@ai-parallel-web/capture';
+import type { DatabaseDeletionAdapter } from '@ai-parallel-web/capture';
+import { RetentionDeletionWorkflow } from '@ai-parallel-web/capture';
 
 class MockDatabaseDeletionAdapter implements DatabaseDeletionAdapter {
   public artifactStorageKeys = new Map<string, string[]>();
@@ -40,7 +41,9 @@ class MockStorageDeletionAdapter {
     this.storedKeys.delete(key);
   }
 
-  public async deleteMany(keys: string[]): Promise<{ deletedKeys: string[]; failedKeys: string[] }> {
+  public async deleteMany(
+    keys: string[],
+  ): Promise<{ deletedKeys: string[]; failedKeys: string[] }> {
     const deletedKeys: string[] = [];
     const failedKeys: string[] = [];
 

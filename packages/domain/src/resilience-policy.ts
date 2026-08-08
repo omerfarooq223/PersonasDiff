@@ -1,8 +1,21 @@
 export interface LeaseRepository {
-  acquireJobLease(runId: string, workerId: string, leaseDurationSec: number): Promise<{ acquired: boolean }>;
+  acquireJobLease(
+    runId: string,
+    workerId: string,
+    leaseDurationSec: number,
+  ): Promise<{ acquired: boolean }>;
   renewJobLease(runId: string, workerId: string, leaseDurationSec: number): Promise<boolean>;
-  releaseJobLease(runId: string, workerId: string, status: 'completed' | 'failed' | 'cancelled'): Promise<boolean>;
-  recordJobFailureAndRetry(runId: string, error: Error, maxRetries: number, baseBackoffMs: number): Promise<{ shouldRetry: boolean; nextDelayMs: number; isPoison: boolean }>;
+  releaseJobLease(
+    runId: string,
+    workerId: string,
+    status: 'completed' | 'failed' | 'cancelled',
+  ): Promise<boolean>;
+  recordJobFailureAndRetry(
+    runId: string,
+    error: Error,
+    maxRetries: number,
+    baseBackoffMs: number,
+  ): Promise<{ shouldRetry: boolean; nextDelayMs: number; isPoison: boolean }>;
 }
 
 export class LeaseManager {
@@ -12,7 +25,7 @@ export class LeaseManager {
     private readonly repository: LeaseRepository,
     private readonly workerId: string,
     private readonly leaseDurationSec: number = 30,
-    private readonly heartbeatIntervalMs: number = 10000
+    private readonly heartbeatIntervalMs: number = 10000,
   ) {}
 
   public async acquire(runId: string): Promise<boolean> {
@@ -38,7 +51,10 @@ export class LeaseManager {
     }
   }
 
-  public async release(runId: string, status: 'completed' | 'failed' | 'cancelled'): Promise<boolean> {
+  public async release(
+    runId: string,
+    status: 'completed' | 'failed' | 'cancelled',
+  ): Promise<boolean> {
     this.stopHeartbeat();
     return this.repository.releaseJobLease(runId, this.workerId, status);
   }
@@ -48,13 +64,18 @@ export class PoisonHandler {
   constructor(
     private readonly repository: LeaseRepository,
     private readonly maxRetries: number = 3,
-    private readonly baseBackoffMs: number = 1000
+    private readonly baseBackoffMs: number = 1000,
   ) {}
 
   public async handleFailure(
     runId: string,
-    error: Error
+    error: Error,
   ): Promise<{ shouldRetry: boolean; nextDelayMs: number; isPoison: boolean }> {
-    return this.repository.recordJobFailureAndRetry(runId, error, this.maxRetries, this.baseBackoffMs);
+    return this.repository.recordJobFailureAndRetry(
+      runId,
+      error,
+      this.maxRetries,
+      this.baseBackoffMs,
+    );
   }
 }

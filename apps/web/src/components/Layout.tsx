@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Activity, Play, BarChart3, History } from 'lucide-react';
+import { Activity, Play } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,9 +34,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
-        {children}
-      </main>
+      <main className="container mx-auto px-4 py-8">{children}</main>
     </div>
   );
 }

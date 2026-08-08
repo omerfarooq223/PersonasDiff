@@ -24,13 +24,7 @@ export interface PersonaSettings {
 }
 
 export type StepDSLActionType =
-  | 'navigate'
-  | 'wait'
-  | 'click'
-  | 'type'
-  | 'extract'
-  | 'screenshot'
-  | 'assert';
+  'navigate' | 'wait' | 'click' | 'type' | 'extract' | 'screenshot' | 'assert';
 
 export interface BaseStepAction {
   id: string;
@@ -132,11 +126,13 @@ export interface StepResult {
   screenshotBuffer?: Buffer | undefined;
   extractedData?: Record<string, string> | undefined;
   assertionResult?: AssertionResult | undefined;
-  error?: {
-    message: string;
-    code: string;
-    retryable: boolean;
-  } | undefined;
+  error?:
+    | {
+        message: string;
+        code: string;
+        retryable: boolean;
+      }
+    | undefined;
 }
 
 export interface ProvenanceMetadata {
@@ -149,12 +145,7 @@ export interface ProvenanceMetadata {
   timestampUtc: string;
 }
 
-export type ProgressEventStatus =
-  | 'started'
-  | 'completed'
-  | 'failed'
-  | 'retrying'
-  | 'cancelled';
+export type ProgressEventStatus = 'started' | 'completed' | 'failed' | 'retrying' | 'cancelled';
 
 export interface RunProgressEvent {
   runId: string;
@@ -163,11 +154,13 @@ export interface RunProgressEvent {
   stepType: StepDSLActionType;
   status: ProgressEventStatus;
   durationMs?: number | undefined;
-  error?: {
-    message: string;
-    code: string;
-    retryable: boolean;
-  } | undefined;
+  error?:
+    | {
+        message: string;
+        code: string;
+        retryable: boolean;
+      }
+    | undefined;
   timestampUtc: string;
 }
 

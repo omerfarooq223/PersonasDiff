@@ -38,13 +38,13 @@ function toExportResponse(row: ExportRow): ExportResponse {
 
 export async function createExportRecord(
   pool: pg.Pool,
-  input: CreateExportInput
+  input: CreateExportInput,
 ): Promise<ExportResponse> {
   const result = await pool.query<ExportRow>(
     `INSERT INTO exports (run_id, tenant_id, format, schema_version, status, created_at)
      VALUES ($1, $2, $3, $4, 'pending', NOW())
      RETURNING id, run_id, tenant_id, format, schema_version, manifest_hash, status, storage_key, retention_expires_at, created_at`,
-    [input.runId, input.tenantId, input.format, input.schemaVersion]
+    [input.runId, input.tenantId, input.format, input.schemaVersion],
   );
   return toExportResponse(result.rows[0]!);
 }
@@ -52,13 +52,13 @@ export async function createExportRecord(
 export async function getExportById(
   pool: pg.Pool,
   tenantId: string,
-  exportId: string
+  exportId: string,
 ): Promise<ExportResponse | null> {
   const result = await pool.query<ExportRow>(
     `SELECT id, run_id, tenant_id, format, schema_version, manifest_hash, status, storage_key, retention_expires_at, created_at
      FROM exports
      WHERE id = $1 AND tenant_id = $2`,
-    [exportId, tenantId]
+    [exportId, tenantId],
   );
   if (!result.rows[0]) return null;
   return toExportResponse(result.rows[0]);
@@ -70,7 +70,7 @@ export async function updateExportStatus(
   status: 'ready' | 'failed' | 'expired',
   storageKey?: string,
   manifestHash?: string,
-  retentionExpiresAt?: Date
+  retentionExpiresAt?: Date,
 ): Promise<ExportResponse | null> {
   const result = await pool.query<ExportRow>(
     `UPDATE exports
@@ -80,7 +80,7 @@ export async function updateExportStatus(
          retention_expires_at = COALESCE($4, retention_expires_at)
      WHERE id = $5
      RETURNING id, run_id, tenant_id, format, schema_version, manifest_hash, status, storage_key, retention_expires_at, created_at`,
-    [status, storageKey ?? null, manifestHash ?? null, retentionExpiresAt ?? null, exportId]
+    [status, storageKey ?? null, manifestHash ?? null, retentionExpiresAt ?? null, exportId],
   );
   if (!result.rows[0]) return null;
   return toExportResponse(result.rows[0]);

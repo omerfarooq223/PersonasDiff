@@ -8,7 +8,10 @@ export interface StrandedRun {
 
 export interface ReconciliationRepository {
   findStrandedRuns(limit: number): Promise<StrandedRun[]>;
-  reconcileStrandedRun(runId: string, maxRetries: number): Promise<{ action: 'requeued' | 'failed'; retryCount: number }>;
+  reconcileStrandedRun(
+    runId: string,
+    maxRetries: number,
+  ): Promise<{ action: 'requeued' | 'failed'; retryCount: number }>;
 }
 
 export interface ReconciliationSummary {
@@ -18,7 +21,10 @@ export interface ReconciliationSummary {
 }
 
 export class ReconciliationEngine {
-  constructor(private readonly repository: ReconciliationRepository, private readonly maxRetries: number = 3) {}
+  constructor(
+    private readonly repository: ReconciliationRepository,
+    private readonly maxRetries: number = 3,
+  ) {}
 
   public async runReconciliation(): Promise<ReconciliationSummary> {
     const stranded = await this.repository.findStrandedRuns(100);

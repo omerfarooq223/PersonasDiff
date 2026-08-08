@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Progress } from '../components/ui/progress';
-import { api, type PersonaVersion, type JourneyVersion, type Surface, type CreateRunRequest } from '../lib/api';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { api, type CreateRunRequest } from '../lib/api';
 import { analytics } from '../lib/analytics';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -49,10 +53,8 @@ export default function CreateRun() {
   const handlePersonaToggle = (personaId: string) => {
     setSelectedPersonaIds((prev) => {
       const isSelected = prev.includes(personaId);
-      const newIds = isSelected
-        ? prev.filter((id) => id !== personaId)
-        : [...prev, personaId];
-      
+      const newIds = isSelected ? prev.filter((id) => id !== personaId) : [...prev, personaId];
+
       // Track persona selection
       if (!isSelected && personas) {
         const persona = personas.find((p) => p.id === personaId);
@@ -60,7 +62,7 @@ export default function CreateRun() {
           analytics.trackPersonaSelected(persona.id, persona.name);
         }
       }
-      
+
       return newIds;
     });
   };
@@ -113,9 +115,7 @@ export default function CreateRun() {
         <Card>
           <CardHeader>
             <CardTitle>1. Select Surface</CardTitle>
-            <CardDescription>
-              Choose the approved public surface to test against.
-            </CardDescription>
+            <CardDescription>Choose the approved public surface to test against.</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingSurfaces ? (
@@ -129,11 +129,13 @@ export default function CreateRun() {
                   <SelectValue placeholder="Select a surface" />
                 </SelectTrigger>
                 <SelectContent>
-                  {surfaces?.filter((s) => s.status === 'approved').map((surface) => (
-                    <SelectItem key={surface.id} value={surface.id}>
-                      {surface.name} ({surface.hostname})
-                    </SelectItem>
-                  ))}
+                  {surfaces
+                    ?.filter((s) => s.status === 'approved')
+                    .map((surface) => (
+                      <SelectItem key={surface.id} value={surface.id}>
+                        {surface.name} ({surface.hostname})
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             )}
@@ -144,9 +146,7 @@ export default function CreateRun() {
         <Card>
           <CardHeader>
             <CardTitle>2. Select Journey Version</CardTitle>
-            <CardDescription>
-              Choose the immutable journey definition to execute.
-            </CardDescription>
+            <CardDescription>Choose the immutable journey definition to execute.</CardDescription>
           </CardHeader>
           <CardContent>
             {!surfaceId ? (
@@ -164,11 +164,13 @@ export default function CreateRun() {
                   <SelectValue placeholder="Select a journey" />
                 </SelectTrigger>
                 <SelectContent>
-                  {journeys?.filter((j) => j.surfaceId === surfaceId).map((journey) => (
-                    <SelectItem key={journey.id} value={journey.id}>
-                      {journey.name} v{journey.version} ({journey.steps.length} steps)
-                    </SelectItem>
-                  ))}
+                  {journeys
+                    ?.filter((j) => j.surfaceId === surfaceId)
+                    .map((journey) => (
+                      <SelectItem key={journey.id} value={journey.id}>
+                        {journey.name} v{journey.version} ({journey.steps.length} steps)
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             )}
@@ -180,7 +182,8 @@ export default function CreateRun() {
           <CardHeader>
             <CardTitle>3. Select Personas</CardTitle>
             <CardDescription>
-              Choose at least two personas to compare. Each persona runs in an isolated browser context.
+              Choose at least two personas to compare. Each persona runs in an isolated browser
+              context.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -216,7 +219,8 @@ export default function CreateRun() {
                         <span className="text-xs text-muted-foreground">v{persona.version}</span>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        {persona.settings.locale} • {persona.settings.timezoneId} • {persona.settings.viewport.width}x{persona.settings.viewport.height}
+                        {persona.settings.locale} • {persona.settings.timezoneId} •{' '}
+                        {persona.settings.viewport.width}x{persona.settings.viewport.height}
                       </div>
                     </div>
                     {selectedPersonaIds.includes(persona.id) && (
@@ -245,10 +249,7 @@ export default function CreateRun() {
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={!canSubmit || createRunMutation.isPending}
-          >
+          <Button type="submit" disabled={!canSubmit || createRunMutation.isPending}>
             {createRunMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -262,9 +263,7 @@ export default function CreateRun() {
 
         {createRunMutation.isError && (
           <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive">
-              Failed to create run. Please try again.
-            </p>
+            <p className="text-sm text-destructive">Failed to create run. Please try again.</p>
           </div>
         )}
       </form>

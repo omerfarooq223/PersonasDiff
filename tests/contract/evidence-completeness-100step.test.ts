@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { ArtifactCapturePipeline } from '@ai-parallel-web/capture';
 import { ManifestGenerator } from '@ai-parallel-web/capture';
-import { StepEvidencePayload } from '@ai-parallel-web/contracts';
-import { PutObjectInput, StorageObjectMetadata } from '@ai-parallel-web/storage';
+import type { StepEvidencePayload } from '@ai-parallel-web/contracts';
+import type { PutObjectInput, StorageObjectMetadata } from '@ai-parallel-web/storage';
 
 class MockMemoryStorageAdapter {
   public store = new Map<string, Buffer>();
 
   public async putObject(input: PutObjectInput): Promise<StorageObjectMetadata> {
-    const body = typeof input.body === 'string' ? Buffer.from(input.body, 'utf-8') : Buffer.from(input.body);
+    const body =
+      typeof input.body === 'string' ? Buffer.from(input.body, 'utf-8') : Buffer.from(input.body);
     this.store.set(input.key, body);
     return {
       key: input.key,

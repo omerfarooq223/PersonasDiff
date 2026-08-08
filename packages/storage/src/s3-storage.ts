@@ -44,14 +44,13 @@ export function createS3Storage(config: S3StorageConfig): StorageAdapter {
 
     async getSignedUrl(key: string, options = {}): Promise<string> {
       try {
-        // @ts-ignore dynamic presigner lookup
         const presigner = await import('@aws-sdk/s3-request-presigner');
         const command = new GetObjectCommand({
           Bucket: config.bucket,
           Key: key,
         });
         return presigner.getSignedUrl(client, command, {
-          expiresIn: options.expiresInSeconds ?? 900,
+          expiresIn: (options as { expiresInSeconds?: number }).expiresInSeconds ?? 900,
         });
       } catch {
         const endpoint = config.endpoint || `https://s3.${config.region}.amazonaws.com`;

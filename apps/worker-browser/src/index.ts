@@ -13,16 +13,27 @@ export {
   executeWithRetry,
   DEFAULT_RETRY_CONFIG,
 } from './retry-handler.js';
-export { JourneyRunner, type JourneyRunnerOptions, type PersonaJourneyResult } from './journey-runner.js';
-export { WorkerPool, type MultiPersonaRunOptions, type MultiPersonaRunResult } from './worker-pool.js';
+export {
+  JourneyRunner,
+  type JourneyRunnerOptions,
+  type PersonaJourneyResult,
+} from './journey-runner.js';
+export {
+  WorkerPool,
+  type MultiPersonaRunOptions,
+  type MultiPersonaRunResult,
+} from './worker-pool.js';
 
 import { LeaseManager, PoisonHandler, type LeaseRepository } from '@ai-parallel-web/domain';
-import { acquireJobLease, recordJobFailureAndRetry, releaseJobLease, renewJobLease } from '@ai-parallel-web/db';
+import {
+  acquireJobLease,
+  recordJobFailureAndRetry,
+  releaseJobLease,
+  renewJobLease,
+  type DbQueryable,
+} from '@ai-parallel-web/db';
 
-export interface DbPoolQueryable {
-  query<T = any>(sql: string, params?: any[]): Promise<{ rows: T[]; rowCount?: number | null }>;
-  connect(): Promise<any>;
-}
+export type DbPoolQueryable = DbQueryable;
 
 export class ResilientWorkerLoop {
   private isRunning = false;
@@ -31,20 +42,27 @@ export class ResilientWorkerLoop {
   private poisonHandler: PoisonHandler;
 
   constructor(
-    private readonly pool: any,
-    public readonly workerId: string = `worker-${Math.random().toString(36).substring(2, 9)}`
+    private readonly pool: DbPoolQueryable,
+    public readonly workerId: string = `worker-${Math.random().toString(36).substring(2, 9)}`,
   ) {
     const repo: LeaseRepository = {
-      acquireJobLease: (runId, wId, dur) => acquireJobLease(this.pool, runId, wId, dur),
-      renewJobLease: (runId, wId, dur) => renewJobLease(this.pool, runId, wId, dur),
-      releaseJobLease: (runId, wId, status) => releaseJobLease(this.pool, runId, wId, status),
-      recordJobFailureAndRetry: (runId, err, maxR, base) => recordJobFailureAndRetry(this.pool, runId, err, maxR, base),
+      acquireJobLease: (runId: string, wId: string, dur: number) =>
+        acquireJobLease(this.pool, runId, wId, dur),
+      renewJobLease: (runId: string, wId: string, dur: number) =>
+        renewJobLease(this.pool, runId, wId, dur),
+      releaseJobLease: (runId: string, wId: string, status: 'completed' | 'failed' | 'cancelled') =>
+        releaseJobLease(this.pool, runId, wId, status),
+      recordJobFailureAndRetry: (runId: string, err: Error, maxR: number, base: number) =>
+        recordJobFailureAndRetry(this.pool, runId, err, maxR, base),
     };
     this.leaseManager = new LeaseManager(repo, this.workerId);
     this.poisonHandler = new PoisonHandler(repo);
   }
 
-  public async processRun(runId: string, executeJobFn: (runId: string) => Promise<void>): Promise<boolean> {
+  public async processRun(
+    runId: string,
+    executeJobFn: (runId: string) => Promise<void>,
+  ): Promise<boolean> {
     const acquired = await this.leaseManager.acquire(runId);
     if (!acquired) return false;
 
@@ -55,9 +73,12 @@ export class ResilientWorkerLoop {
       await executeJobFn(runId);
       await this.leaseManager.release(runId, 'completed');
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.leaseManager.stopHeartbeat();
-      const res = await this.poisonHandler.handleFailure(runId, err instanceof Error ? err : new Error(String(err)));
+      const res = await this.poisonHandler.handleFailure(
+        runId,
+        err instanceof Error ? err : new Error(String(err)),
+      );
       if (!res.shouldRetry) {
         await this.leaseManager.release(runId, 'failed');
       }

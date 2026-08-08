@@ -68,6 +68,7 @@ interface NormalizationConfig {
 **Purpose:** Measures overlap in artifact types between personas.
 
 **Algorithm:**
+
 ```
 J(A, B) = |A ∩ B| / |A ∪ B|
 ```
@@ -79,10 +80,12 @@ J(A, B) = |A ∩ B| / |A ∪ B|
 **Threshold:** 0.9 (90% similarity)
 
 **Interpretation:**
+
 - ≥ 0.9: Artifact types are consistent
 - < 0.9: Missing or additional artifacts detected
 
 **Example:**
+
 - Persona A: [screenshot, dom_snapshot]
 - Persona B: [screenshot, dom_snapshot, text_subset]
 - Jaccard: 0.67 (below threshold)
@@ -92,6 +95,7 @@ J(A, B) = |A ∩ B| / |A ∪ B|
 **Purpose:** Measures similarity in extracted text content.
 
 **Algorithm:**
+
 - Normalizes text (whitespace, casing)
 - Computes character-level Jaccard similarity
 - Configurable locale support
@@ -103,10 +107,12 @@ J(A, B) = |A ∩ B| / |A ∪ B|
 **Threshold:** 0.95 (95% similarity)
 
 **Interpretation:**
+
 - ≥ 0.95: Text content is substantially similar
 - < 0.95: Meaningful text differences detected
 
 **Example:**
+
 - Text A: "Premium Product - $99.99"
 - Text B: "Standard Product - $89.99"
 - Similarity: ~0.85 (below threshold)
@@ -116,6 +122,7 @@ J(A, B) = |A ∩ B| / |A ∪ B|
 **Purpose:** Detects changes in item ordering between personas.
 
 **Algorithm:**
+
 ```
 Shift = (number of items that changed position) / (total items)
 ```
@@ -127,11 +134,13 @@ Shift = (number of items that changed position) / (total items)
 **Threshold:** Any shift > 0 is flagged
 
 **Interpretation:**
+
 - 0.0: Identical ordering
 - > 0.0: Some items changed position
 - 1.0: Complete reordering
 
 **Example:**
+
 - List A: [item1, item2, item3]
 - List B: [item3, item1, item2]
 - Shift: 0.67 (67% of items changed position)
@@ -141,6 +150,7 @@ Shift = (number of items that changed position) / (total items)
 **Purpose:** Detects differences in numeric values (prices, counts, etc.).
 
 **Algorithm:**
+
 ```
 Delta = |valueB - valueA| / |valueA|
 ```
@@ -152,10 +162,12 @@ Delta = |valueB - valueA| / |valueA|
 **Threshold:** 0.01 (1% relative difference)
 
 **Interpretation:**
+
 - ≤ 0.01: Values are essentially identical
 - > 0.01: Meaningful numeric difference detected
 
 **Example:**
+
 - Value A: 99.99
 - Value B: 109.99
 - Delta: 0.10 (10% difference)
@@ -165,6 +177,7 @@ Delta = |valueB - valueA| / |valueA|
 **Purpose:** Detects differences in URL paths after redirects.
 
 **Algorithm:**
+
 - Normalizes URLs (removes tracking params)
 - Compares pathname components
 - Returns boolean
@@ -176,10 +189,12 @@ Delta = |valueB - valueA| / |valueA|
 **Threshold:** Any difference is flagged
 
 **Interpretation:**
+
 - false: Same redirect path
 - true: Different redirect paths detected
 
 **Example:**
+
 - URL A: https://example.com/page-a
 - URL B: https://example.com/page-b
 - Difference: true
@@ -189,6 +204,7 @@ Delta = |valueB - valueA| / |valueA|
 **Purpose:** Detects differences in page load timing.
 
 **Algorithm:**
+
 ```
 Delta = |timingB - timingA| (in milliseconds)
 ```
@@ -200,12 +216,14 @@ Delta = |timingB - timingA| (in milliseconds)
 **Threshold:** 1000ms (1 second)
 
 **Interpretation:**
+
 - ≤ 1000ms: Timing difference is within normal variance
 - > 1000ms: Significant timing difference detected
 
 **Warning:** Timing can vary due to network conditions; this may not indicate a meaningful difference.
 
 **Example:**
+
 - Timing A: 1000ms
 - Timing B: 1500ms
 - Delta: 500ms (within threshold)
@@ -215,16 +233,19 @@ Delta = |timingB - timingA| (in milliseconds)
 Each metric result includes a confidence level:
 
 ### HIGH
+
 - Evidence is complete and present
 - No redaction or missing data
 - Direct measurement available
 
 ### MEDIUM
+
 - Some uncertainty in measurement
 - Known environmental factors (e.g., timing)
 - Partial evidence available
 
 ### LOW
+
 - Significant uncertainty
 - Missing or censored evidence
 - Indirect measurement required
@@ -235,10 +256,10 @@ Default thresholds can be configured per deployment:
 
 ```typescript
 interface ComparisonThresholds {
-  textSimilarityThreshold: number;      // Default: 0.95
-  numericDeltaThreshold: number;         // Default: 0.01
-  timingDeltaThreshold: number;          // Default: 1000 (ms)
-  jaccardSimilarityThreshold: number;   // Default: 0.9
+  textSimilarityThreshold: number; // Default: 0.95
+  numericDeltaThreshold: number; // Default: 0.01
+  timingDeltaThreshold: number; // Default: 1000 (ms)
+  jaccardSimilarityThreshold: number; // Default: 0.9
 }
 ```
 

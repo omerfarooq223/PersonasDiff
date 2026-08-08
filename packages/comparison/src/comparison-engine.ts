@@ -1,11 +1,15 @@
 /**
  * Comparison Engine - Orchestrates deterministic comparison metrics
- * 
+ *
  * Persists raw inputs, normalized inputs, metric version, result, and explanation.
  * Ensures non-causal wording in results (observed differences, not causal claims).
  */
 
-import type { StepEvidencePayload, ComparisonResult, MetricResult } from '@ai-parallel-web/contracts';
+import type {
+  StepEvidencePayload,
+  ComparisonResult,
+  MetricResult,
+} from '@ai-parallel-web/contracts';
 import { ComparisonMetrics, type ComparisonThresholds } from './comparison-metrics.js';
 import { NormalizationEngine, type NormalizationConfig } from './normalization-engine.js';
 
@@ -18,7 +22,7 @@ export class ComparisonEngine {
   constructor(
     private normalizationConfig?: NormalizationConfig,
     private comparisonThresholds?: ComparisonThresholds,
-    private metricVersion: string = '1.0.0'
+    private metricVersion: string = '1.0.0',
   ) {}
 
   /**
@@ -27,13 +31,13 @@ export class ComparisonEngine {
   public async comparePersonas(
     runId: string,
     personaA: ComparisonInput,
-    personaB: ComparisonInput
+    personaB: ComparisonInput,
   ): Promise<ComparisonResult> {
     const normalizationEngine = new NormalizationEngine(this.normalizationConfig);
     const metrics = new ComparisonMetrics(
       normalizationEngine,
       this.comparisonThresholds,
-      this.metricVersion
+      this.metricVersion,
     );
 
     const comparisonResults: MetricResult[] = [];
@@ -77,7 +81,7 @@ export class ComparisonEngine {
     }
 
     // Determine overall confidence
-    const confidenceScores = comparisonResults.map(r => r.confidence);
+    const confidenceScores = comparisonResults.map((r) => r.confidence);
     const overallConfidence = this.determineOverallConfidence(confidenceScores);
 
     // Generate overall observation using non-causal wording
@@ -99,7 +103,7 @@ export class ComparisonEngine {
   /**
    * Extracts numeric field paths from an object
    */
-  private extractNumericFields(obj: any, prefix: string = ''): string[] {
+  private extractNumericFields(obj: unknown, prefix: string = ''): string[] {
     const numericFields: string[] = [];
 
     if (typeof obj === 'number') {
@@ -107,12 +111,14 @@ export class ComparisonEngine {
     }
 
     if (typeof obj === 'object' && obj !== null) {
-      for (const key of Object.keys(obj)) {
+      const rec = obj as Record<string, unknown>;
+      for (const key of Object.keys(rec)) {
         const fieldPath = prefix ? `${prefix}.${key}` : key;
-        if (typeof obj[key] === 'number') {
+        const val = rec[key];
+        if (typeof val === 'number') {
           numericFields.push(fieldPath);
-        } else if (typeof obj[key] === 'object') {
-          numericFields.push(...this.extractNumericFields(obj[key], fieldPath));
+        } else if (typeof val === 'object' && val !== null) {
+          numericFields.push(...this.extractNumericFields(val, fieldPath));
         }
       }
     }
@@ -123,7 +129,7 @@ export class ComparisonEngine {
   /**
    * Extracts array field paths from an object
    */
-  private extractArrayFields(obj: any, prefix: string = ''): string[] {
+  private extractArrayFields(obj: unknown, prefix: string = ''): string[] {
     const arrayFields: string[] = [];
 
     if (Array.isArray(obj)) {
@@ -131,12 +137,14 @@ export class ComparisonEngine {
     }
 
     if (typeof obj === 'object' && obj !== null) {
-      for (const key of Object.keys(obj)) {
+      const rec = obj as Record<string, unknown>;
+      for (const key of Object.keys(rec)) {
         const fieldPath = prefix ? `${prefix}.${key}` : key;
-        if (Array.isArray(obj[key])) {
+        const val = rec[key];
+        if (Array.isArray(val)) {
           arrayFields.push(fieldPath);
-        } else if (typeof obj[key] === 'object') {
-          arrayFields.push(...this.extractArrayFields(obj[key], fieldPath));
+        } else if (typeof val === 'object' && val !== null) {
+          arrayFields.push(...this.extractArrayFields(val, fieldPath));
         }
       }
     }
@@ -147,9 +155,11 @@ export class ComparisonEngine {
   /**
    * Determines overall confidence from individual metric confidences
    */
-  private determineOverallConfidence(confidences: ('HIGH' | 'MEDIUM' | 'LOW')[]): 'HIGH' | 'MEDIUM' | 'LOW' {
-    if (confidences.every(c => c === 'HIGH')) return 'HIGH';
-    if (confidences.some(c => c === 'LOW')) return 'LOW';
+  private determineOverallConfidence(
+    confidences: ('HIGH' | 'MEDIUM' | 'LOW')[],
+  ): 'HIGH' | 'MEDIUM' | 'LOW' {
+    if (confidences.every((c) => c === 'HIGH')) return 'HIGH';
+    if (confidences.some((c) => c === 'LOW')) return 'LOW';
     return 'MEDIUM';
   }
 
@@ -157,7 +167,7 @@ export class ComparisonEngine {
    * Generates overall observation using non-causal wording
    */
   private generateOverallObservation(metrics: MetricResult[]): string {
-    const significantDifferences = metrics.filter(m => {
+    const significantDifferences = metrics.filter((m) => {
       if (typeof m.result === 'number') {
         return m.result < 0.95; // Threshold for similarity metrics
       }
@@ -168,7 +178,7 @@ export class ComparisonEngine {
       return 'No meaningful differences observed between personas under recorded conditions.';
     }
 
-    const differenceTypes = [...new Set(significantDifferences.map(m => m.metricName))];
+    const differenceTypes = [...new Set(significantDifferences.map((m) => m.metricName))];
     const observation = `Observed differences in ${differenceTypes.join(', ')} between personas under recorded conditions. These are observed associations, not causal claims.`;
 
     return observation;

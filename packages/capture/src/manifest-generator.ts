@@ -6,7 +6,7 @@ export class ManifestGenerator {
     const sortedSteps = [...steps].sort((a, b) => a.stepIndex - b.stepIndex);
     const totalSteps = sortedSteps.length;
     const completedSteps = sortedSteps.filter(
-      (s) => s.overallEvidenceState !== 'MISSING_FAILURE'
+      (s) => s.overallEvidenceState !== 'MISSING_FAILURE',
     ).length;
     const completenessPercentage =
       totalSteps > 0 ? Number(((completedSteps / totalSteps) * 100).toFixed(2)) : 0;

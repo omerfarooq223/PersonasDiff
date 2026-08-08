@@ -34,9 +34,7 @@ export class WorkerPool {
     this.journeyRunner = new JourneyRunner();
   }
 
-  async runMultiPersonaJourney(
-    options: MultiPersonaRunOptions,
-  ): Promise<MultiPersonaRunResult> {
+  async runMultiPersonaJourney(options: MultiPersonaRunOptions): Promise<MultiPersonaRunResult> {
     const { runId, personas, journey, retryConfig, abortSignal, onProgress } = options;
     const startTime = Date.now();
     const personaResults: Record<string, PersonaJourneyResult> = {};

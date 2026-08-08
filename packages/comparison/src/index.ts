@@ -13,10 +13,7 @@ export {
   type ComparisonThresholds,
 } from './comparison-metrics.js';
 
-export {
-  ComparisonEngine,
-  type ComparisonInput,
-} from './comparison-engine.js';
+export { ComparisonEngine, type ComparisonInput } from './comparison-engine.js';
 
 export {
   RepeatControlProtocol,

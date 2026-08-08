@@ -1,21 +1,38 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Progress } from '../components/ui/progress';
-import { api, type Run } from '../lib/api';
+import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
-import { Loader2, Play, XCircle, CheckCircle, AlertCircle, BarChart3, History, Clock } from 'lucide-react';
+import {
+  Loader2,
+  XCircle,
+  CheckCircle,
+  AlertCircle,
+  BarChart3,
+  History,
+  Clock,
+  FileText,
+  FileSpreadsheet,
+} from 'lucide-react';
 
 export default function RunDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const [exportingFormat, setExportingFormat] = useState<'json' | 'csv' | null>(null);
 
-  const { data: run, isLoading, error } = useQuery({
+  const {
+    data: run,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['run', id],
     queryFn: () => api.getRun(id!),
     enabled: !!id,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'queued' || status === 'running' ? 2000 : false;
+    },
   });
 
   // Track run view
@@ -27,13 +44,34 @@ export default function RunDetail() {
 
   const cancelMutation = useMutation({
     mutationFn: () => api.cancelRun(id!),
-    onSuccess: () => {
-      // Refetch will happen automatically due to query invalidation
-    },
   });
 
+  const handleExport = async (format: 'json' | 'csv') => {
+    if (!id) return;
+    try {
+      setExportingFormat(format);
+      const record = await api.createExport(id, format);
+      const download = await api.getExportDownload(record.id);
+
+      // Trigger download
+      const link = document.createElement('a');
+      link.href = download.downloadUrl;
+      link.download = `run_export_${id.slice(0, 8)}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setExportingFormat(null);
+    }
+  };
+
   const canCancel = run?.status === 'queued' || run?.status === 'running';
-  const isComplete = run?.status === 'completed' || run?.status === 'partially_completed' || run?.status === 'failed';
+  const isComplete =
+    run?.status === 'completed' ||
+    run?.status === 'partially_completed' ||
+    run?.status === 'failed';
 
   const statusIcons = {
     draft: Clock,
@@ -67,9 +105,7 @@ export default function RunDetail() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-destructive">
-            Failed to load run. Please try again.
-          </p>
+          <p className="text-sm text-destructive">Failed to load run. Please try again.</p>
           <Link to="/runs">
             <Button variant="outline" className="mt-4">
               Back to Runs
@@ -88,7 +124,9 @@ export default function RunDetail() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-3">
-            <StatusIcon className={`h-6 w-6 ${statusColor} ${run.status === 'running' ? 'animate-spin' : ''}`} />
+            <StatusIcon
+              className={`h-6 w-6 ${statusColor} ${run.status === 'running' ? 'animate-spin' : ''}`}
+            />
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Run {run.id.slice(0, 8)}</h1>
               <p className="text-muted-foreground mt-1">
@@ -119,6 +157,30 @@ export default function RunDetail() {
           )}
           {isComplete && (
             <>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('json')}
+                disabled={exportingFormat !== null}
+              >
+                {exportingFormat === 'json' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                Export JSON
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('csv')}
+                disabled={exportingFormat !== null}
+              >
+                {exportingFormat === 'csv' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                )}
+                Export CSV
+              </Button>
               <Link to={`/runs/${run.id}/comparison`}>
                 <Button variant="outline">
                   <BarChart3 className="mr-2 h-4 w-4" />
@@ -154,13 +216,48 @@ export default function RunDetail() {
                 <span className="text-sm text-muted-foreground">{run.correlationId}</span>
               </div>
             )}
-            {run.status === 'running' && (
+            {run.surfaceId && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Surface ID</span>
+                <span className="text-sm text-muted-foreground">{run.surfaceId}</span>
+              </div>
+            )}
+            {run.journeyVersionId && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Journey Version ID</span>
+                <span className="text-sm text-muted-foreground">{run.journeyVersionId}</span>
+              </div>
+            )}
+            {run.personaVersionIds && run.personaVersionIds.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  Personas ({run.personaVersionIds.length})
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {run.personaVersionIds.map((pId) => (
+                    <span
+                      key={pId}
+                      className="px-2 py-0.5 bg-secondary text-secondary-foreground text-xs rounded"
+                    >
+                      {pId.slice(0, 8)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(run.status === 'running' || run.status === 'queued') && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Progress</span>
-                  <span className="text-sm text-muted-foreground">Processing...</span>
+                  <span className="text-sm text-muted-foreground">
+                    {run.status === 'queued'
+                      ? 'Queued for execution...'
+                      : 'Executing persona contexts...'}
+                  </span>
                 </div>
-                <Progress value={undefined} className="h-2" />
+                <div className="w-full bg-secondary h-2 rounded overflow-hidden">
+                  <div className="bg-primary h-full animate-pulse w-3/4 rounded" />
+                </div>
               </div>
             )}
           </div>
@@ -182,9 +279,7 @@ export default function RunDetail() {
         <Card>
           <CardHeader>
             <CardTitle>Run Cancelled</CardTitle>
-            <CardDescription>
-              The run was cancelled by an operator.
-            </CardDescription>
+            <CardDescription>The run was cancelled by an operator.</CardDescription>
           </CardHeader>
         </Card>
       )}

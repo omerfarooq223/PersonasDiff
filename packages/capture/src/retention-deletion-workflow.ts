@@ -19,11 +19,15 @@ export interface DatabaseDeletionAdapter {
 export class RetentionDeletionWorkflow {
   constructor(
     private db: DatabaseDeletionAdapter,
-    private storage: StorageDeletionAdapter
+    private storage: StorageDeletionAdapter,
   ) {}
 
-  public async executeRetentionJob(retentionDays = 30): Promise<{ processedRuns: number; errors: string[] }> {
-    const expiredRunIds = this.db.getExpiredRunIds ? await this.db.getExpiredRunIds(retentionDays) : [];
+  public async executeRetentionJob(
+    retentionDays = 30,
+  ): Promise<{ processedRuns: number; errors: string[] }> {
+    const expiredRunIds = this.db.getExpiredRunIds
+      ? await this.db.getExpiredRunIds(retentionDays)
+      : [];
     const errors: string[] = [];
     let processedRuns = 0;
 

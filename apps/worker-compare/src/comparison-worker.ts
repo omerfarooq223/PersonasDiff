@@ -1,20 +1,19 @@
 /**
  * Comparison Worker - Processes comparison jobs
- * 
+ *
  * Consumes run completion events, retrieves evidence for personas,
  * executes comparison metrics, and persists results.
  */
 
 import { ComparisonEngine, type ComparisonInput } from '@ai-parallel-web/comparison';
+import type { StepEvidencePayload } from '@ai-parallel-web/contracts';
 import {
   getStepEvidenceByRun,
   insertComparisonResult,
+  type DbQueryable,
 } from '@ai-parallel-web/db';
 
-export interface DbPoolQueryable {
-  query<T = any>(sql: string, params?: any[]): Promise<{ rows: T[] }>;
-  connect(): Promise<any>;
-}
+export type DbPoolQueryable = DbQueryable;
 
 export interface ComparisonJob {
   runId: string;
@@ -24,8 +23,8 @@ export interface ComparisonJob {
 
 export class ComparisonWorker {
   constructor(
-    private pool: any,
-    private comparisonEngine: ComparisonEngine = new ComparisonEngine()
+    private pool: DbPoolQueryable,
+    private comparisonEngine: ComparisonEngine = new ComparisonEngine(),
   ) {}
 
   /**
@@ -53,11 +52,7 @@ export class ComparisonWorker {
             evidence: evidenceByPersona.get(personaBId) || [],
           };
 
-          const result = await this.comparisonEngine.comparePersonas(
-            job.runId,
-            personaA,
-            personaB
-          );
+          const result = await this.comparisonEngine.comparePersonas(job.runId, personaA, personaB);
 
           await insertComparisonResult(this.pool, result);
         }
@@ -72,14 +67,14 @@ export class ComparisonWorker {
    * Retrieves evidence for all personas in a run
    */
   private async getEvidenceForAllPersonas(
-    job: ComparisonJob
-  ): Promise<Map<string, any[]>> {
+    job: ComparisonJob,
+  ): Promise<Map<string, StepEvidencePayload[]>> {
     const allEvidence = await getStepEvidenceByRun(this.pool, job.runId);
-    
-    const evidenceByPersona = new Map<string, any[]>();
-    
+
+    const evidenceByPersona = new Map<string, StepEvidencePayload[]>();
+
     for (const evidence of allEvidence) {
-      const personaId = (evidence as any).personaId ?? (evidence as any).persona_version_id ?? 'default';
+      const personaId = evidence.personaId || 'default';
       if (!evidenceByPersona.has(personaId)) {
         evidenceByPersona.set(personaId, []);
       }

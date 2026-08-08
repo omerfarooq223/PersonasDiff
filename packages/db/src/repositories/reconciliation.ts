@@ -10,7 +10,7 @@ export interface StrandedRunRecord {
 
 export async function findStrandedRuns(
   pool: pg.Pool,
-  limit: number = 50
+  limit: number = 50,
 ): Promise<StrandedRunRecord[]> {
   const result = await pool.query<{
     id: string;
@@ -26,7 +26,7 @@ export async function findStrandedRuns(
        AND lease_expires_at < NOW()
      ORDER BY lease_expires_at ASC
      LIMIT $1`,
-    [limit]
+    [limit],
   );
 
   return result.rows.map((row) => ({
@@ -41,7 +41,7 @@ export async function findStrandedRuns(
 export async function reconcileStrandedRun(
   pool: pg.Pool,
   runId: string,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<{ action: 'requeued' | 'failed'; retryCount: number }> {
   const client = await pool.connect();
   try {
@@ -49,7 +49,7 @@ export async function reconcileStrandedRun(
 
     const runRes = await client.query<{ retry_count: number }>(
       `SELECT retry_count FROM runs WHERE id = $1 FOR UPDATE`,
-      [runId]
+      [runId],
     );
 
     const currentRetry = (runRes.rows[0]?.retry_count ?? 0) + 1;
@@ -64,13 +64,13 @@ export async function reconcileStrandedRun(
              updated_at = NOW(),
              completed_at = NOW()
          WHERE id = $1`,
-        [runId]
+        [runId],
       );
 
       await client.query(
         `INSERT INTO dead_letter_jobs (run_id, reason, error_stack, quarantined_at)
          VALUES ($1, 'STRANDED_WORKER_EXPIRED', 'Worker lease expired and max retries exceeded', NOW())`,
-        [runId]
+        [runId],
       );
 
       await client.query('COMMIT');
@@ -85,7 +85,7 @@ export async function reconcileStrandedRun(
            worker_id = NULL,
            updated_at = NOW()
        WHERE id = $2`,
-      [currentRetry, runId]
+      [currentRetry, runId],
     );
 
     await client.query('COMMIT');

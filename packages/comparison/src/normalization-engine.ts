@@ -1,6 +1,6 @@
 /**
  * Normalization Engine for Deterministic Comparison
- * 
+ *
  * Normalizes whitespace, casing, locale-aware numbers/currencies, tracking parameters,
  * and unstable DOM attributes without deleting meaningful differences.
  */
@@ -57,9 +57,7 @@ export class NormalizationEngine {
     let normalized = text;
 
     if (!this.config.preserveWhitespace) {
-      normalized = normalized
-        .replace(/\s+/g, ' ')
-        .trim();
+      normalized = normalized.replace(/\s+/g, ' ').trim();
     }
 
     if (!this.config.preserveCase) {
@@ -99,10 +97,8 @@ export class NormalizationEngine {
       return value;
     }
 
-    const cleaned = value
-      .replace(/[^\d.,-]/g, '')
-      .replace(/,/g, '.');
-    
+    const cleaned = value.replace(/[^\d.,-]/g, '').replace(/,/g, '.');
+
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
   }
@@ -115,10 +111,8 @@ export class NormalizationEngine {
       return value;
     }
 
-    const cleaned = value
-      .replace(/[^\d.,-]/g, '')
-      .replace(/,/g, '.');
-    
+    const cleaned = value.replace(/[^\d.,-]/g, '').replace(/,/g, '.');
+
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
   }
@@ -145,7 +139,7 @@ export class NormalizationEngine {
    * Normalizes an array of items by sorting and normalizing each item
    */
   public normalizeItemSet(items: (string | number)[]): (string | number)[] {
-    const normalized = items.map(item => {
+    const normalized = items.map((item) => {
       if (typeof item === 'string') {
         return this.normalizeText(item);
       }
@@ -168,7 +162,7 @@ export class NormalizationEngine {
       .replace(/<[^>]*>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-    
+
     return this.normalizeText(textContent);
   }
 }

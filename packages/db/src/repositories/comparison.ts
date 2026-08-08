@@ -1,9 +1,10 @@
 import type pg from 'pg';
 import type { ComparisonResult } from '@ai-parallel-web/contracts';
+import type { DbQueryable } from '../pool.js';
 
 export async function insertComparisonResult(
-  pool: pg.Pool,
-  result: ComparisonResult
+  pool: DbQueryable,
+  result: ComparisonResult,
 ): Promise<string> {
   const client = await pool.connect();
   try {
@@ -34,7 +35,7 @@ export async function insertComparisonResult(
         result.confidence,
         result.warnings,
         JSON.stringify(result),
-      ]
+      ],
     );
 
     const comparisonResultId = comparisonResult.rows[0]?.id;
@@ -57,7 +58,7 @@ export async function insertComparisonResult(
             metric.explanation,
             metric.confidence,
             metric.warnings,
-          ]
+          ],
         );
       }
     }
@@ -74,22 +75,22 @@ export async function insertComparisonResult(
 
 export async function getComparisonResultsByRun(
   pool: pg.Pool,
-  runId: string
+  runId: string,
 ): Promise<ComparisonResult[]> {
   const res = await pool.query<{ payload: ComparisonResult }>(
     `SELECT payload FROM comparison_results WHERE run_id = $1 ORDER BY timestamp_utc ASC`,
-    [runId]
+    [runId],
   );
   return res.rows.map((r: { payload: ComparisonResult }) => r.payload);
 }
 
 export async function getComparisonResultById(
   pool: pg.Pool,
-  comparisonId: string
+  comparisonId: string,
 ): Promise<ComparisonResult | null> {
   const res = await pool.query<{ payload: ComparisonResult }>(
     `SELECT payload FROM comparison_results WHERE comparison_id = $1`,
-    [comparisonId]
+    [comparisonId],
   );
   return res.rows[0]?.payload || null;
 }

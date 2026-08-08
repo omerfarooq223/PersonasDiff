@@ -39,7 +39,17 @@ export async function buildApp(
     timeWindow: config.rateLimitWindowMs,
   });
 
-  app.addHook('onRequest', createBackpressureMiddleware(resolvedDeps.db));
+  app.addHook('onRequest', async (_request, reply) => {
+    void reply.header(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none';",
+    );
+    void reply.header('X-Content-Type-Options', 'nosniff');
+    void reply.header('X-Frame-Options', 'DENY');
+    void reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  });
+
+  app.addHook('preHandler', createBackpressureMiddleware(resolvedDeps.db));
 
   registerHealthRoutes(app, config, resolvedDeps);
   registerRunRoutes(app, config, resolvedDeps);
@@ -47,13 +57,14 @@ export async function buildApp(
 
   app.setErrorHandler((error, request, reply) => {
     request.log.error({ err: error }, 'request failed');
-    void reply.status(500).send(
+    const status = error.statusCode ?? 500;
+    void reply.status(status).send(
       buildProblem({
-        detail: 'The request could not be completed.',
+        detail: error.message || 'The request could not be completed.',
         requestId: request.id,
-        status: 500,
-        title: 'Internal Server Error',
-        type: 'internal-error',
+        status,
+        title: status === 429 ? 'Too Many Requests' : 'Internal Server Error',
+        type: status === 429 ? 'rate-limit-exceeded' : 'internal-error',
       }),
     );
   });

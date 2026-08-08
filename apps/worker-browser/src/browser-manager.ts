@@ -37,7 +37,9 @@ export class BrowserManager {
         geolocation: {
           latitude: persona.geolocation.latitude,
           longitude: persona.geolocation.longitude,
-          ...(persona.geolocation.accuracy !== undefined && { accuracy: persona.geolocation.accuracy }),
+          ...(persona.geolocation.accuracy !== undefined && {
+            accuracy: persona.geolocation.accuracy,
+          }),
         },
       }),
       ...(persona.permissions && { permissions: persona.permissions }),

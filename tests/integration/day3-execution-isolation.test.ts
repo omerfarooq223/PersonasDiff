@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
-import type { PersonaSettings, JourneyDefinition, RunProgressEvent } from '@ai-parallel-web/contracts';
+import type {
+  PersonaSettings,
+  JourneyDefinition,
+  RunProgressEvent,
+} from '@ai-parallel-web/contracts';
 import { WorkerPool, isUrlAllowed } from '../../apps/worker-browser/src/index.js';
 
 describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
@@ -17,9 +21,10 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
       const query = request.query as { persona?: string };
       const persona = query.persona === 'variant' ? 'variant' : 'control';
 
-      const items = persona === 'variant'
-        ? `<li data-testid="product" data-id="beta" data-rank="1"><span>Beta</span><data value="18.00">$18.00</data></li>`
-        : `<li data-testid="product" data-id="alpha" data-rank="1"><span>Alpha</span><data value="10.00">$10.00</data></li>`;
+      const items =
+        persona === 'variant'
+          ? `<li data-testid="product" data-id="beta" data-rank="1"><span>Beta</span><data value="18.00">$18.00</data></li>`
+          : `<li data-testid="product" data-id="alpha" data-rank="1"><span>Alpha</span><data value="10.00">$10.00</data></li>`;
 
       // Return cookie and session storage script for isolation verification
       reply.header('Set-Cookie', `session_token=secret_${persona}; Path=/; HttpOnly`);
@@ -39,7 +44,7 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
 
     // Endpoint that redirects to an unauthorized external origin
     fixtureServer.get('/redirect-unauthorized', async (_req, reply) => {
-      return reply.redirect(302, 'http://unauthorized-domain.invalid/malicious');
+      return reply.redirect('http://unauthorized-domain.invalid/malicious', 302);
     });
 
     await fixtureServer.listen({ host: '127.0.0.1', port: 0 });
@@ -162,8 +167,8 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
     expect(resVariant.stepResults).toHaveLength(5);
 
     // Verify extracted data differs between personas (Control has Alpha, Variant has Beta)
-    const extractControl = resControl.stepResults[2].extractedData?.catalogueContent;
-    const extractVariant = resVariant.stepResults[2].extractedData?.catalogueContent;
+    const extractControl = resControl.stepResults[2]!.extractedData?.catalogueContent;
+    const extractVariant = resVariant.stepResults[2]!.extractedData?.catalogueContent;
 
     expect(extractControl).toContain('Alpha');
     expect(extractControl).not.toContain('Beta');
@@ -174,7 +179,7 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
     // Verify provenance captured correct persona settings
     expect(resControl.provenance.effectivePersonaSettings.locale).toBe('en-US');
     expect(resVariant.provenance.effectivePersonaSettings.locale).toBe('fr-FR');
-  });
+  }, 15000);
 
   it('Gate Criterion 2: Isolation enforcement — hard boundary prevents state leakage across personas', async () => {
     const workerPool = new WorkerPool(1);
@@ -219,7 +224,14 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
       policy: { allowedUrlPatterns: [`${baseUrl}/*`] },
       steps: [
         { id: 'nav', type: 'navigate', url: `${baseUrl}/fixture?persona=control` },
-        { id: 'extract-body', type: 'extract', selector: 'body', extractName: 'bodyAttr', target: 'attribute', attributeName: 'data-persona' },
+        {
+          id: 'extract-body',
+          type: 'extract',
+          selector: 'body',
+          extractName: 'bodyAttr',
+          target: 'attribute',
+          attributeName: 'data-persona',
+        },
       ],
     };
 

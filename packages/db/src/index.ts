@@ -1,6 +1,6 @@
-export { hashApiToken, hashRequestBody } from './crypto.js';
+export { hashApiToken, hashRequestBody, maskSecret } from './crypto.js';
 export { defaultMigrationsDirectory, runMigrations } from './migrate.js';
-export { checkDatabaseHealth, createPool } from './pool.js';
+export { checkDatabaseHealth, createPool, type DbQueryable } from './pool.js';
 export { insertAuditEvent, listAuditEvents } from './repositories/audit.js';
 export {
   findIdempotencyRecord,

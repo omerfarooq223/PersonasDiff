@@ -22,8 +22,4 @@ export type {
   EvidenceState,
 } from './evidence-schema.js';
 
-export type {
-  ComparisonResult,
-  MetricResult,
-  ComparisonConfidence,
-} from './comparison-schema.js';
+export type { ComparisonResult, MetricResult, ComparisonConfidence } from './comparison-schema.js';

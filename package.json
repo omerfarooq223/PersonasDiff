@@ -8,8 +8,8 @@
     "node": ">=24"
   },
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
@@ -19,6 +19,7 @@
     "format": "prettier --write . --config config/tooling/prettier.config.mjs",
     "format:check": "prettier --check . --config config/tooling/prettier.config.mjs",
     "lint": "eslint . --config config/tooling/eslint.config.mjs",
+    "sbom": "tsx infra/scripts/generate-sbom.ts",
     "spike": "npm run spike --workspace=@ai-parallel-web/browser-spike",
     "stack:down": "docker compose -f infra/compose/docker-compose.yml down",
     "stack:logs": "docker compose -f infra/compose/docker-compose.yml logs -f",

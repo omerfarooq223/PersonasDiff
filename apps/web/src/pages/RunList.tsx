@@ -2,8 +2,17 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { api, type Run } from '../lib/api';
-import { Loader2, Play, Clock, CheckCircle, XCircle, AlertCircle, MoreHorizontal, Activity } from 'lucide-react';
+import { api } from '../lib/api';
+import {
+  Loader2,
+  Play,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  MoreHorizontal,
+  Activity,
+} from 'lucide-react';
 
 const statusIcons = {
   draft: Clock,
@@ -26,7 +35,11 @@ const statusColors = {
 };
 
 export default function RunList() {
-  const { data: runsData, isLoading, error } = useQuery({
+  const {
+    data: runsData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['runs'],
     queryFn: () => api.listRuns(20, 0),
   });
@@ -38,9 +51,7 @@ export default function RunList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Runs</h1>
-          <p className="text-muted-foreground mt-2">
-            View and manage your comparison runs.
-          </p>
+          <p className="text-muted-foreground mt-2">View and manage your comparison runs.</p>
         </div>
         <Link to="/runs/new">
           <Button>
@@ -57,9 +68,7 @@ export default function RunList() {
       ) : error ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-destructive">
-              Failed to load runs. Please try again.
-            </p>
+            <p className="text-sm text-destructive">Failed to load runs. Please try again.</p>
           </CardContent>
         </Card>
       ) : runs.length === 0 ? (
@@ -85,18 +94,35 @@ export default function RunList() {
           {runs.map((run) => {
             const StatusIcon = statusIcons[run.status as keyof typeof statusIcons];
             const statusColor = statusColors[run.status as keyof typeof statusColors];
-            
+
             return (
               <Card key={run.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <StatusIcon className={`h-5 w-5 ${statusColor} ${run.status === 'running' ? 'animate-spin' : ''}`} />
+                      <StatusIcon
+                        className={`h-5 w-5 ${statusColor} ${run.status === 'running' ? 'animate-spin' : ''}`}
+                      />
                       <div>
-                        <CardTitle className="text-lg">{run.id.slice(0, 8)}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(run.createdAt).toLocaleString()}
+                        <Link to={`/runs/${run.id}`} className="hover:underline">
+                          <CardTitle className="text-lg font-semibold">
+                            {run.id.slice(0, 8)}
+                          </CardTitle>
+                        </Link>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Created {new Date(run.createdAt).toLocaleString()}
                         </p>
+                        <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
+                          {run.personaVersionIds && (
+                            <span className="bg-secondary px-2 py-0.5 rounded text-secondary-foreground">
+                              {run.personaVersionIds.length} Personas
+                            </span>
+                          )}
+                          {run.surfaceId && <span>Surface: {run.surfaceId.slice(0, 8)}</span>}
+                          {run.journeyVersionId && (
+                            <span>Journey: {run.journeyVersionId.slice(0, 8)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -104,7 +130,7 @@ export default function RunList() {
                         {run.status.replace('_', ' ')}
                       </span>
                       <Link to={`/runs/${run.id}`}>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="View run details">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </Link>

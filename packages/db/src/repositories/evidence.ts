@@ -1,7 +1,11 @@
 import type pg from 'pg';
 import type { StepEvidencePayload, RunManifestPayload } from '@ai-parallel-web/contracts';
+import type { DbQueryable } from '../pool.js';
 
-export async function insertStepEvidence(pool: pg.Pool, payload: StepEvidencePayload): Promise<string> {
+export async function insertStepEvidence(
+  pool: pg.Pool,
+  payload: StepEvidencePayload,
+): Promise<string> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -33,7 +37,7 @@ export async function insertStepEvidence(pool: pg.Pool, payload: StepEvidencePay
         payload.httpOutcome.ok,
         payload.overallEvidenceState,
         JSON.stringify(payload),
-      ]
+      ],
     );
 
     const stepEvidenceId = evidenceResult.rows[0]?.id;
@@ -53,7 +57,7 @@ export async function insertStepEvidence(pool: pg.Pool, payload: StepEvidencePay
             artifact.sizeBytes,
             artifact.mimeType,
             artifact.state,
-          ]
+          ],
         );
       }
     }
@@ -71,7 +75,7 @@ export async function insertStepEvidence(pool: pg.Pool, payload: StepEvidencePay
             audit.identifier,
             audit.matchesFound,
             audit.actionTaken,
-          ]
+          ],
         );
       }
     }
@@ -86,7 +90,10 @@ export async function insertStepEvidence(pool: pg.Pool, payload: StepEvidencePay
   }
 }
 
-export async function insertRunManifest(pool: pg.Pool, manifest: RunManifestPayload): Promise<void> {
+export async function insertRunManifest(
+  pool: pg.Pool,
+  manifest: RunManifestPayload,
+): Promise<void> {
   await pool.query(
     `INSERT INTO run_manifests (
       run_id, schema_version, total_steps, completed_steps, completeness_percentage, manifest_sha256, manifest_payload
@@ -106,14 +113,17 @@ export async function insertRunManifest(pool: pg.Pool, manifest: RunManifestPayl
       manifest.completenessPercentage,
       manifest.manifestSha256,
       JSON.stringify(manifest),
-    ]
+    ],
   );
 }
 
-export async function getStepEvidenceByRun(pool: pg.Pool, runId: string): Promise<StepEvidencePayload[]> {
+export async function getStepEvidenceByRun(
+  pool: DbQueryable,
+  runId: string,
+): Promise<StepEvidencePayload[]> {
   const res = await pool.query<{ payload: StepEvidencePayload }>(
     `SELECT payload FROM step_evidence WHERE run_id = $1 ORDER BY step_index ASC`,
-    [runId]
+    [runId],
   );
   return res.rows.map((r: { payload: StepEvidencePayload }) => r.payload);
 }
@@ -124,7 +134,7 @@ export async function getRunArtifactStorageKeys(pool: pg.Pool, runId: string): P
      FROM step_artifacts sa
      JOIN step_evidence se ON sa.step_evidence_id = se.id
      WHERE se.run_id = $1`,
-    [runId]
+    [runId],
   );
   return res.rows.map((r: { storage_key: string }) => r.storage_key);
 }
@@ -141,7 +151,7 @@ export async function logDeletionAudit(
     deletedArtifactCount: number;
     status: 'SUCCESS' | 'PARTIAL' | 'FAILED';
     errorMessage?: string | null;
-  }
+  },
 ): Promise<void> {
   await pool.query(
     `INSERT INTO deletion_audit_logs (
@@ -153,6 +163,6 @@ export async function logDeletionAudit(
       params.deletedArtifactCount,
       params.status,
       params.errorMessage ?? null,
-    ]
+    ],
   );
 }

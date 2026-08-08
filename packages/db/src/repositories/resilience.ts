@@ -1,4 +1,4 @@
-import type pg from 'pg';
+import type { DbQueryable } from '../pool.js';
 
 export interface LeaseAcquireResult {
   acquired: boolean;
@@ -8,10 +8,10 @@ export interface LeaseAcquireResult {
 }
 
 export async function acquireJobLease(
-  pool: pg.Pool,
+  pool: DbQueryable,
   runId: string,
   workerId: string,
-  leaseDurationSec: number = 30
+  leaseDurationSec: number = 30,
 ): Promise<LeaseAcquireResult> {
   const result = await pool.query<{ id: string; worker_id: string; lease_expires_at: Date }>(
     `UPDATE runs
@@ -21,7 +21,7 @@ export async function acquireJobLease(
          updated_at = NOW()
      WHERE id = $3 AND (lease_expires_at IS NULL OR lease_expires_at < NOW() OR status = 'queued')
      RETURNING id, worker_id, lease_expires_at`,
-    [workerId, leaseDurationSec, runId]
+    [workerId, leaseDurationSec, runId],
   );
 
   if (result.rows.length === 0) {
@@ -38,26 +38,26 @@ export async function acquireJobLease(
 }
 
 export async function renewJobLease(
-  pool: pg.Pool,
+  pool: DbQueryable,
   runId: string,
   workerId: string,
-  leaseDurationSec: number = 30
+  leaseDurationSec: number = 30,
 ): Promise<boolean> {
   const result = await pool.query(
     `UPDATE runs
      SET lease_expires_at = NOW() + INTERVAL '1 second' * $2,
          updated_at = NOW()
      WHERE id = $1 AND worker_id = $3 AND status = 'running'`,
-    [runId, leaseDurationSec, workerId]
+    [runId, leaseDurationSec, workerId],
   );
   return (result.rowCount ?? 0) > 0;
 }
 
 export async function releaseJobLease(
-  pool: pg.Pool,
+  pool: DbQueryable,
   runId: string,
   workerId: string,
-  finalStatus: 'completed' | 'failed' | 'cancelled'
+  finalStatus: 'completed' | 'failed' | 'cancelled',
 ): Promise<boolean> {
   const result = await pool.query(
     `UPDATE runs
@@ -66,19 +66,20 @@ export async function releaseJobLease(
          updated_at = NOW(),
          completed_at = CASE WHEN $3 IN ('completed', 'failed', 'cancelled') THEN NOW() ELSE completed_at END
      WHERE id = $1 AND worker_id = $2`,
-    [runId, workerId, finalStatus]
+    [runId, workerId, finalStatus],
   );
   return (result.rowCount ?? 0) > 0;
 }
 
 export async function recordJobFailureAndRetry(
-  pool: pg.Pool,
+  pool: DbQueryable,
   runId: string,
   error: Error,
   maxRetries: number = 3,
-  baseBackoffMs: number = 1000
+  baseBackoffMs: number = 1000,
 ): Promise<{ shouldRetry: boolean; nextDelayMs: number; isPoison: boolean }> {
-  const isPoison = error.name === 'InvalidPayloadError' || error.message.includes('MALFORMED_TARGET');
+  const isPoison =
+    error.name === 'InvalidPayloadError' || error.message.includes('MALFORMED_TARGET');
 
   const client = await pool.connect();
   try {
@@ -86,7 +87,7 @@ export async function recordJobFailureAndRetry(
 
     const currentRes = await client.query<{ retry_count: number }>(
       `SELECT retry_count FROM runs WHERE id = $1 FOR UPDATE`,
-      [runId]
+      [runId],
     );
 
     const currentRetries = (currentRes.rows[0]?.retry_count ?? 0) + 1;
@@ -102,13 +103,21 @@ export async function recordJobFailureAndRetry(
              quarantined_at = NOW(),
              updated_at = NOW()
          WHERE id = $3`,
-        [currentRetries, isPoison ? `POISON_JOB: ${error.message}` : `MAX_RETRIES_EXCEEDED: ${error.message}`, runId]
+        [
+          currentRetries,
+          isPoison ? `POISON_JOB: ${error.message}` : `MAX_RETRIES_EXCEEDED: ${error.message}`,
+          runId,
+        ],
       );
 
       await client.query(
         `INSERT INTO dead_letter_jobs (run_id, reason, error_stack, quarantined_at)
          VALUES ($1, $2, $3, NOW())`,
-        [runId, isPoison ? 'POISON_PAYLOAD' : 'RETRY_BUDGET_EXCEEDED', error.stack || error.message]
+        [
+          runId,
+          isPoison ? 'POISON_PAYLOAD' : 'RETRY_BUDGET_EXCEEDED',
+          error.stack || error.message,
+        ],
       );
 
       await client.query('COMMIT');
@@ -126,7 +135,7 @@ export async function recordJobFailureAndRetry(
            scheduled_at = NOW() + INTERVAL '1 millisecond' * $2,
            updated_at = NOW()
        WHERE id = $3`,
-      [currentRetries, nextDelayMs, runId]
+      [currentRetries, nextDelayMs, runId],
     );
 
     await client.query('COMMIT');

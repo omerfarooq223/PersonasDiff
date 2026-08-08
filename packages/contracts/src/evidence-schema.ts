@@ -30,11 +30,13 @@ export interface HttpResponseMetadata {
   headers: Record<string, string>;
   protocol: string;
   remoteIPAddress?: string | undefined;
-  securityDetails?: {
-    protocol?: string | undefined;
-    issuer?: string | undefined;
-    validTo?: number | undefined;
-  } | undefined;
+  securityDetails?:
+    | {
+        protocol?: string | undefined;
+        issuer?: string | undefined;
+        validTo?: number | undefined;
+      }
+    | undefined;
 }
 
 export interface ConsoleErrorItem {
@@ -52,7 +54,8 @@ export interface RedactionAuditRecord {
 }
 
 export interface StepArtifactReference {
-  artifactType: 'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
+  artifactType:
+    'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
   storageKey: string;
   sha256: string;
   sizeBytes: number;

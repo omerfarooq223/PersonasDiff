@@ -1,29 +1,29 @@
 declare module 'pg' {
   export interface QueryResultRow {
-    [column: string]: any;
+    [column: string]: unknown;
   }
 
-  export interface QueryResult<R extends QueryResultRow = any> {
+  export interface QueryResult<R = Record<string, unknown>> {
     rows: R[];
     rowCount: number | null;
     command: string;
     oid: number;
-    fields: any[];
+    fields: unknown[];
   }
 
   export interface PoolClient {
-    query<R extends QueryResultRow = any, I extends any[] = any[]>(
+    query<R = Record<string, unknown>, I extends unknown[] = unknown[]>(
       queryText: string,
-      values?: I
+      values?: I,
     ): Promise<QueryResult<R>>;
     release(err?: boolean | Error): void;
   }
 
   export class Pool {
-    constructor(config?: any);
-    query<R extends QueryResultRow = any, I extends any[] = any[]>(
+    constructor(config?: unknown);
+    query<R = Record<string, unknown>, I extends unknown[] = unknown[]>(
       queryText: string,
-      values?: I
+      values?: I,
     ): Promise<QueryResult<R>>;
     connect(): Promise<PoolClient>;
     end(): Promise<void>;

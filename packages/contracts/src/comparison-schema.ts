@@ -1,6 +1,6 @@
 /**
  * Comparison Schema Contracts
- * 
+ *
  * Defines the contract for comparison results and metrics.
  */
 

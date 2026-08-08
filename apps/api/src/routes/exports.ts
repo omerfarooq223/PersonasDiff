@@ -18,7 +18,10 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
   // POST /api/v1/runs/:id/exports
   app.post(
     '/api/v1/runs/:id/exports',
-    async (request: FastifyRequest<{ Params: { id: string }; Body: { format?: 'json' | 'csv' } }>, reply: FastifyReply) => {
+    async (
+      request: FastifyRequest<{ Params: { id: string }; Body: { format?: 'json' | 'csv' } }>,
+      reply: FastifyReply,
+    ) => {
       const user = requireAuth(request, reply);
       if (!user) return;
       if (!deps.db) {
@@ -29,7 +32,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
             requestId: request.id,
             status: 503,
             type: 'service_unavailable',
-          })
+          }),
         );
       }
 
@@ -45,7 +48,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
             requestId: request.id,
             status: 404,
             type: 'not_found',
-          })
+          }),
         );
       }
 
@@ -61,11 +64,11 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
       const stepEvidences = await getStepEvidenceByRun(deps.db, runId);
       const steps = stepEvidences.map((e) => ({
         stepIndex: e.stepIndex,
-        stepId: e.stepId,
+        ...(e.stepId ? { stepId: e.stepId } : {}),
         actionType: 'navigate',
         status: e.overallEvidenceState,
-        finalUrl: e.finalUrl,
-        durationMs: Number(e.monotonicDurationNs) / 1000000,
+        ...(e.finalUrl ? { finalUrl: e.finalUrl } : {}),
+        durationMs: Number(BigInt(e.monotonicDurationNs || '0')) / 1000000,
         diffScore: 0,
         payload: e.extractionPayload ?? {},
       }));
@@ -81,7 +84,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
           ...(run.journeyVersionId ? { journeyVersionId: run.journeyVersionId } : {}),
         },
         steps,
-        []
+        [],
       );
 
       const storageKey = `exports/${user.tenantId}/${exportRecord.id}/run_export.${format}`;
@@ -92,7 +95,10 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
           key: storageKey,
           body: content,
           contentType: format === 'csv' ? 'text/csv' : 'application/json',
-          checksumSha256: format === 'csv' ? exportBundle.manifest.files[1]!.sha256 : exportBundle.manifest.files[0]!.sha256,
+          checksumSha256:
+            format === 'csv'
+              ? exportBundle.manifest.files[1]!.sha256
+              : exportBundle.manifest.files[0]!.sha256,
         });
       }
 
@@ -102,7 +108,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
         'ready',
         storageKey,
         exportBundle.manifestHash,
-        new Date(Date.now() + 7 * 86400 * 1000)
+        new Date(Date.now() + 7 * 86400 * 1000),
       );
 
       await insertAuditEvent(deps.db, {
@@ -126,7 +132,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
         manifestHash: exportBundle.manifestHash,
         createdAt: updated?.createdAt ?? exportRecord.createdAt,
       });
-    }
+    },
   );
 
   // GET /api/v1/exports/:id/download
@@ -143,7 +149,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
             requestId: request.id,
             status: 503,
             type: 'service_unavailable',
-          })
+          }),
         );
       }
 
@@ -158,7 +164,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
             requestId: request.id,
             status: 404,
             type: 'not_found',
-          })
+          }),
         );
       }
 
@@ -170,7 +176,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
             requestId: request.id,
             status: 400,
             type: 'bad_request',
-          })
+          }),
         );
       }
 
@@ -200,6 +206,6 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
         downloadUrl,
         expiresInSeconds: 900,
       });
-    }
+    },
   );
 }

@@ -90,6 +90,37 @@ ParallelWeb/
 └── tests/          # contract, integration, e2e, security suites
 ```
 
+## Security & Compliance
+
+Security and compliance documentation is available in `docs/day-8/`:
+
+- **Security Posture**: System security controls, vulnerability management, and defense-in-depth measures documented in `security-report.md`
+- **Threat Model**: Comprehensive threat analysis covering attack vectors, mitigations, and residual risks in `threat-model.md`
+- **SBOM Details**: Software Bill of Materials tracking all dependencies and their provenance
+- **Acceptable Use Guidelines**: Clear usage policies and operational boundaries in `acceptable-use-policy.md`
+- **Privacy Data Map**: Data flow documentation and privacy controls in `privacy-data-map.md`
+- **Incident Response**: Operational runbook for security incident handling in `incident-response-runbook.md`
+
+### Test Instructions
+
+Run the full test suite:
+
+```sh
+npm test
+```
+
+Run integration tests with stack:
+
+```sh
+RUN_STACK_TESTS=true npm test -- tests/integration
+```
+
+Run security tests:
+
+```sh
+npm test -- tests/security
+```
+
 Key docs:
 
 - `docs/plan.md` — 10-day MVP plan

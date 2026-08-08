@@ -26,14 +26,18 @@ describe('Failure Injection: Worker Crash (SIGKILL Simulation)', () => {
         }
         return false;
       },
-      releaseJobLease: async (runId: string, workerId: string, status: string) => {
+      releaseJobLease: async (runId: string, workerId: string, _status: string) => {
         if (leaseState.workerId === workerId) {
           leaseState = { workerId: null, expiresAt: null };
           return true;
         }
         return false;
       },
-      recordJobFailureAndRetry: async () => ({ shouldRetry: true, nextDelayMs: 1000, isPoison: false }),
+      recordJobFailureAndRetry: async () => ({
+        shouldRetry: true,
+        nextDelayMs: 1000,
+        isPoison: false,
+      }),
     };
 
     const worker1Manager = new LeaseManager(mockRepo, 'worker-1', 30);

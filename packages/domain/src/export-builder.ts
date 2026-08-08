@@ -52,7 +52,7 @@ export class ExportBuilder {
       s3Key: string;
       checksumSha256: string;
       sizeBytes: number;
-    }>
+    }>,
   ): ExportBundle {
     const timestamp = new Date().toISOString();
 
@@ -98,7 +98,8 @@ export class ExportBuilder {
     const jsonContent = JSON.stringify(jsonPayload, null, 2);
 
     // 2. CSV Export
-    const csvHeader = 'step_index,step_id,action_type,status,final_url,duration_ms,diff_score,artifact_id';
+    const csvHeader =
+      'step_index,step_id,action_type,status,final_url,duration_ms,diff_score,artifact_id';
     const csvRows = steps.map((s) =>
       [
         s.stepIndex,
@@ -109,7 +110,7 @@ export class ExportBuilder {
         s.durationMs ?? 0,
         s.diffScore ?? 0,
         `"${s.artifactId ?? ''}"`,
-      ].join(',')
+      ].join(','),
     );
     const csvContent = [csvHeader, ...csvRows].join('\n');
 
@@ -122,7 +123,11 @@ export class ExportBuilder {
       generatedAt: timestamp,
       runId: runData.id,
       files: [
-        { filename: 'run_export.json', sha256: jsonHash, sizeBytes: Buffer.byteLength(jsonContent) },
+        {
+          filename: 'run_export.json',
+          sha256: jsonHash,
+          sizeBytes: Buffer.byteLength(jsonContent),
+        },
         { filename: 'run_export.csv', sha256: csvHash, sizeBytes: Buffer.byteLength(csvContent) },
       ],
     };

@@ -35,7 +35,9 @@ export class StepExecutor {
           validateUrlAgainstPolicy(finalUrl, policy);
 
           if (response && response.status() >= 400) {
-            throw new Error(`HTTP navigation failed with status ${response.status()} for URL: ${finalUrl}`);
+            throw new Error(
+              `HTTP navigation failed with status ${response.status()} for URL: ${finalUrl}`,
+            );
           }
           break;
         }
@@ -72,8 +74,7 @@ export class StepExecutor {
           let extractedValue = '';
 
           if (step.target === 'attribute' && step.attributeName) {
-            extractedValue =
-              (await page.getAttribute(step.selector, step.attributeName)) ?? '';
+            extractedValue = (await page.getAttribute(step.selector, step.attributeName)) ?? '';
           } else if (step.target === 'html') {
             extractedValue = await page.innerHTML(step.selector);
           } else {

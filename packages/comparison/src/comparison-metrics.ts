@@ -1,6 +1,6 @@
 /**
  * Comparison Metrics for Deterministic Difference Detection
- * 
+ *
  * Implements metrics: element presence, item set overlap (Jaccard), rank/order shift,
  * normalized text similarity, numeric/price delta, redirect-path difference, and timing delta.
  */
@@ -26,16 +26,16 @@ export class ComparisonMetrics {
   constructor(
     private normalizationEngine: NormalizationEngine = new NormalizationEngine(),
     private thresholds: ComparisonThresholds = DEFAULT_THRESHOLDS,
-    private metricVersion: string = '1.0.0'
+    private metricVersion: string = '1.0.0',
   ) {}
 
   /**
    * Computes Jaccard similarity between two sets
    */
   public jaccardSimilarity<T>(setA: Set<T>, setB: Set<T>): number {
-    const intersection = new Set<T>([...setA].filter(x => setB.has(x)));
+    const intersection = new Set<T>([...setA].filter((x) => setB.has(x)));
     const union = new Set<T>([...setA, ...setB]);
-    
+
     if (union.size === 0) return 1.0;
     return intersection.size / union.size;
   }
@@ -83,7 +83,7 @@ export class ComparisonMetrics {
   public numericDelta(valueA: number, valueB: number): number {
     if (valueA === 0 && valueB === 0) return 0;
     if (valueA === 0) return Math.abs(valueB);
-    
+
     return Math.abs((valueB - valueA) / valueA);
   }
 
@@ -112,10 +112,14 @@ export class ComparisonMetrics {
    */
   public compareElementPresence(
     evidenceA: StepEvidencePayload,
-    evidenceB: StepEvidencePayload
+    evidenceB: StepEvidencePayload,
   ): MetricResult {
-    const artifactsA = new Set(evidenceA.artifacts.map((a: { artifactType: string }) => a.artifactType));
-    const artifactsB = new Set(evidenceB.artifacts.map((a: { artifactType: string }) => a.artifactType));
+    const artifactsA = new Set(
+      evidenceA.artifacts.map((a: { artifactType: string }) => a.artifactType),
+    );
+    const artifactsB = new Set(
+      evidenceB.artifacts.map((a: { artifactType: string }) => a.artifactType),
+    );
 
     const similarity = this.jaccardSimilarity(artifactsA, artifactsB);
     const hasDifference = similarity < this.thresholds.jaccardSimilarityThreshold;
@@ -135,10 +139,14 @@ export class ComparisonMetrics {
       explanation: hasDifference
         ? `Artifact types differ: presence similarity is ${(similarity * 100).toFixed(1)}%`
         : `Artifact types are consistent: presence similarity is ${(similarity * 100).toFixed(1)}%`,
-      confidence: evidenceA.overallEvidenceState === 'PRESENT' && evidenceB.overallEvidenceState === 'PRESENT' ? 'HIGH' : 'MEDIUM',
-      warnings: evidenceA.overallEvidenceState !== 'PRESENT' || evidenceB.overallEvidenceState !== 'PRESENT'
-        ? ['One or both evidence payloads have missing or censored evidence']
-        : [],
+      confidence:
+        evidenceA.overallEvidenceState === 'PRESENT' && evidenceB.overallEvidenceState === 'PRESENT'
+          ? 'HIGH'
+          : 'MEDIUM',
+      warnings:
+        evidenceA.overallEvidenceState !== 'PRESENT' || evidenceB.overallEvidenceState !== 'PRESENT'
+          ? ['One or both evidence payloads have missing or censored evidence']
+          : [],
     };
   }
 
@@ -147,7 +155,7 @@ export class ComparisonMetrics {
    */
   public compareTextSimilarity(
     evidenceA: StepEvidencePayload,
-    evidenceB: StepEvidencePayload
+    evidenceB: StepEvidencePayload,
   ): MetricResult {
     const textA = JSON.stringify(evidenceA.extractionPayload);
     const textB = JSON.stringify(evidenceB.extractionPayload);
@@ -181,13 +189,13 @@ export class ComparisonMetrics {
   public compareNumericDelta(
     evidenceA: StepEvidencePayload,
     evidenceB: StepEvidencePayload,
-    fieldPath: string
+    fieldPath: string,
   ): MetricResult {
-    const getNumericValue = (obj: any, path: string): number => {
+    const getNumericValue = (obj: unknown, path: string): number => {
       const parts = path.split('.');
-      let current = obj;
+      let current: unknown = obj;
       for (const part of parts) {
-        current = current?.[part];
+        current = (current as Record<string, unknown>)?.[part];
       }
       return typeof current === 'number' ? current : 0;
     };
@@ -224,7 +232,7 @@ export class ComparisonMetrics {
    */
   public compareRedirectPath(
     evidenceA: StepEvidencePayload,
-    evidenceB: StepEvidencePayload
+    evidenceB: StepEvidencePayload,
   ): MetricResult {
     const hasDifference = this.redirectPathDifference(evidenceA.finalUrl, evidenceB.finalUrl);
 
@@ -253,7 +261,7 @@ export class ComparisonMetrics {
    */
   public compareTimingDelta(
     evidenceA: StepEvidencePayload,
-    evidenceB: StepEvidencePayload
+    evidenceB: StepEvidencePayload,
   ): MetricResult {
     const timingA = evidenceA.navigationTimings.totalDurationMs;
     const timingB = evidenceB.navigationTimings.totalDurationMs;
@@ -277,7 +285,9 @@ export class ComparisonMetrics {
         ? `Timing differs by ${delta}ms: ${timingA}ms vs ${timingB}ms`
         : `Timing is similar: ${timingA}ms vs ${timingB}ms`,
       confidence: 'MEDIUM',
-      warnings: ['Timing can vary due to network conditions; this may not indicate a meaningful difference'],
+      warnings: [
+        'Timing can vary due to network conditions; this may not indicate a meaningful difference',
+      ],
     };
   }
 
@@ -287,15 +297,19 @@ export class ComparisonMetrics {
   public compareRankShift(
     evidenceA: StepEvidencePayload,
     evidenceB: StepEvidencePayload,
-    fieldPath: string
+    fieldPath: string,
   ): MetricResult {
-    const getArray = (obj: any, path: string): any[] => {
+    const getArray = (obj: unknown, path: string): (string | number)[] => {
       const parts = path.split('.');
-      let current = obj;
+      let current: unknown = obj;
       for (const part of parts) {
-        current = current?.[part];
+        current = (current as Record<string, unknown>)?.[part];
       }
-      return Array.isArray(current) ? current : [];
+      return Array.isArray(current)
+        ? (current as (string | number)[]).filter(
+            (item) => typeof item === 'string' || typeof item === 'number',
+          )
+        : [];
     };
 
     const listA = getArray(evidenceA.extractionPayload, fieldPath);

@@ -1,6 +1,6 @@
 /**
  * Repeat-Control Protocol for Characterizing Fixture Variance
- * 
+ *
  * Defines a protocol using repeated same-persona runs, alternating or randomized
  * execution order, and recorded target variability so general page drift is not
  * mislabeled as a persona-associated difference.
@@ -87,7 +87,8 @@ export class RepeatControlProtocol {
     }
 
     const mean = measurements.reduce((sum, val) => sum + val, 0) / measurements.length;
-    const variance = measurements.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / measurements.length;
+    const variance =
+      measurements.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / measurements.length;
     const standardDeviation = Math.sqrt(variance);
     const min = Math.min(...measurements);
     const max = Math.max(...measurements);
@@ -107,7 +108,7 @@ export class RepeatControlProtocol {
    */
   public analyzeControlRunResults(
     controlRuns: ControlRunConfig[],
-    metricValues: Map<string, number[]>
+    metricValues: Map<string, number[]>,
   ): ControlRunResults {
     const varianceMeasurements: VarianceMeasurement[] = [];
     const warnings: string[] = [];
@@ -120,7 +121,7 @@ export class RepeatControlProtocol {
       // Flag high variance metrics
       if (stats.standardDeviation / stats.mean > 0.1) {
         warnings.push(
-          `Metric ${metricName} shows high variance (CV: ${((stats.standardDeviation / stats.mean) * 100).toFixed(1)}%)`
+          `Metric ${metricName} shows high variance (CV: ${((stats.standardDeviation / stats.mean) * 100).toFixed(1)}%)`,
         );
       }
     }
@@ -151,13 +152,14 @@ export class RepeatControlProtocol {
   public isDifferenceSignificant(
     observedDifference: number,
     controlVariance: VarianceMeasurement,
-    threshold = 2.0
+    threshold = 2.0,
   ): boolean {
     // Use z-score: difference is significant if it's > threshold standard deviations from control mean
-    const zScore = controlVariance.standardDeviation > 0 
-      ? observedDifference / controlVariance.standardDeviation 
-      : Infinity;
-    
+    const zScore =
+      controlVariance.standardDeviation > 0
+        ? observedDifference / controlVariance.standardDeviation
+        : Infinity;
+
     return zScore > threshold;
   }
 
@@ -168,7 +170,7 @@ export class RepeatControlProtocol {
     baseRunId: string,
     personaId: string,
     runCount: number,
-    executionOrderType: 'random' | 'alternating' | 'sequential' = 'random'
+    executionOrderType: 'random' | 'alternating' | 'sequential' = 'random',
   ): ControlRunConfig[] {
     const configs: ControlRunConfig[] = [];
     let executionOrder: number[];

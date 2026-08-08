@@ -25,7 +25,11 @@ interface AnalyticsEvent {
 class Analytics {
   private events: AnalyticsEvent[] = [];
 
-  track(event: FunnelEvent, metadata: Record<string, unknown> | undefined, runId: string | undefined) {
+  track(
+    event: FunnelEvent,
+    metadata: Record<string, unknown> | undefined,
+    runId: string | undefined,
+  ) {
     const analyticsEvent: AnalyticsEvent = {
       event,
       timestamp: new Date().toISOString(),

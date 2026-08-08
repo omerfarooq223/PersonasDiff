@@ -1,7 +1,4 @@
-import type {
-  RetryConfig,
-  ExecutionErrorClassification,
-} from '@ai-parallel-web/contracts';
+import type { RetryConfig, ExecutionErrorClassification } from '@ai-parallel-web/contracts';
 
 export const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxRetries: 3,

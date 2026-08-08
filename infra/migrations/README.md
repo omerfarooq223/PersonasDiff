@@ -4,11 +4,11 @@ Day 2 introduces the migration tool and first transactional schema. Migrations m
 
 ## Files
 
-| Version | File                              | Purpose                                                                |
-| ------- | --------------------------------- | ---------------------------------------------------------------------- |
-| 001     | `001_initial_schema.sql`          | Tenants, users, surfaces, journeys, personas, runs, audit, idempotency |
-| 004     | `004_evidence_and_retention.sql`  | Evidence capture, manifests, redaction audits, and retention rules     |
-| 005     | `005_comparison_metrics.sql`      | Comparison metrics and results persistence                             |
+| Version | File                             | Purpose                                                                |
+| ------- | -------------------------------- | ---------------------------------------------------------------------- |
+| 001     | `001_initial_schema.sql`         | Tenants, users, surfaces, journeys, personas, runs, audit, idempotency |
+| 004     | `004_evidence_and_retention.sql` | Evidence capture, manifests, redaction audits, and retention rules     |
+| 005     | `005_comparison_metrics.sql`     | Comparison metrics and results persistence                             |
 
 ## Apply locally
 

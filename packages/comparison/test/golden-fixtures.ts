@@ -1,6 +1,6 @@
 /**
  * Golden Fixtures for Comparison Metrics Testing
- * 
+ *
  * Contains test cases for identical, reordered, substituted, price-changed,
  * redirected, and partially missing experiences.
  */

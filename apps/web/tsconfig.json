@@ -25,5 +25,5 @@
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "references": [{"path": "../../packages/contracts"}]
+  "references": [{ "path": "../../packages/contracts" }]
 }

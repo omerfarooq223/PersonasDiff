@@ -9,7 +9,12 @@ describe('Failure Injection: Database Timeout', () => {
       acquireJobLease: async () => ({ acquired: true }),
       renewJobLease: async () => true,
       releaseJobLease: async () => true,
-      recordJobFailureAndRetry: async (runId: string, error: Error, maxRetries: number, baseBackoffMs: number) => {
+      recordJobFailureAndRetry: async (
+        runId: string,
+        error: Error,
+        maxRetries: number,
+        baseBackoffMs: number,
+      ) => {
         attempts++;
         if (attempts === 1) {
           throw new Error('Query read timeout: connection reset by peer');

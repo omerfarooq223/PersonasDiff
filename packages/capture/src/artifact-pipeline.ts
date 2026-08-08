@@ -23,7 +23,7 @@ export interface ExtendedStorageAdapter {
 export class ArtifactCapturePipeline {
   constructor(
     private storage: ExtendedStorageAdapter,
-    private redactionEngine: RedactionEngine = new RedactionEngine()
+    private redactionEngine: RedactionEngine = new RedactionEngine(),
   ) {}
 
   public async captureAndProcessStep(params: {
@@ -178,7 +178,8 @@ export class ArtifactCapturePipeline {
     runId: string;
     personaId: string;
     stepIndex: number;
-    artifactType: 'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
+    artifactType:
+      'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
     buffer: Buffer;
     mimeType: string;
   }): Promise<StepArtifactReference> {
@@ -210,7 +211,7 @@ export class ArtifactCapturePipeline {
     buffer: Buffer,
     mimeType: string,
     checksumSha256: string,
-    retries = 3
+    retries = 3,
   ): Promise<void> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
@@ -228,7 +229,10 @@ export class ArtifactCapturePipeline {
     }
   }
 
-  private async extractNavigationTimings(page: Page, fallbackUtc: string): Promise<NavigationTiming> {
+  private async extractNavigationTimings(
+    page: Page,
+    fallbackUtc: string,
+  ): Promise<NavigationTiming> {
     try {
       const timingJson = await page.evaluate(() => {
         const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;

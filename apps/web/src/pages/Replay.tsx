@@ -5,7 +5,18 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { api, type StepEvidence } from '../lib/api';
 import { analytics } from '../lib/analytics';
-import { Loader2, ArrowLeft, Play, Pause, SkipBack, SkipForward, Clock, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 
 const evidenceStateIcons = {
   PRESENT: CheckCircle,
@@ -26,7 +37,11 @@ export default function Replay() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const { data: replayData, isLoading, error } = useQuery({
+  const {
+    data: replayData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['replay', id],
     queryFn: () => api.getReplay(id!),
     enabled: !!id,
@@ -48,6 +63,25 @@ export default function Replay() {
       analytics.trackReplayStepNavigated(id, currentStepIndex, steps.length);
     }
   }, [currentStepIndex, steps.length, id]);
+
+  // Auto-play steps timer
+  useEffect(() => {
+    if (!isPlaying) return;
+    if (currentStepIndex >= steps.length - 1) {
+      setIsPlaying(false);
+      return;
+    }
+    const timer = setInterval(() => {
+      setCurrentStepIndex((prev) => {
+        if (prev >= steps.length - 1) {
+          setIsPlaying(false);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [isPlaying, currentStepIndex, steps.length]);
 
   const handlePrevious = () => {
     setCurrentStepIndex((prev) => Math.max(0, prev - 1));
@@ -73,9 +107,7 @@ export default function Replay() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-destructive">
-            Failed to load replay. Please try again.
-          </p>
+          <p className="text-sm text-destructive">Failed to load replay. Please try again.</p>
           <Link to={`/runs/${id}`}>
             <Button variant="outline" className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -91,9 +123,7 @@ export default function Replay() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            No evidence available for replay.
-          </p>
+          <p className="text-sm text-muted-foreground">No evidence available for replay.</p>
           <Link to={`/runs/${id}`}>
             <Button variant="outline" className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -109,9 +139,7 @@ export default function Replay() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            Step not available.
-          </p>
+          <p className="text-sm text-muted-foreground">Step not available.</p>
           <Link to={`/runs/${id}`}>
             <Button variant="outline" className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -132,9 +160,7 @@ export default function Replay() {
       <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex items-center space-x-2 text-sm">
           <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <span className="font-medium text-blue-900 dark:text-blue-100">
-            Historical Evidence
-          </span>
+          <span className="font-medium text-blue-900 dark:text-blue-100">Historical Evidence</span>
           <span className="text-blue-700 dark:text-blue-300">
             — Captured on {new Date(currentStep.timestampUtc).toLocaleString()}
           </span>
@@ -235,7 +261,8 @@ export default function Replay() {
             </div>
           </div>
           <CardDescription>
-            Persona: {currentStep.personaId.slice(0, 8)} • {new Date(currentStep.timestampUtc).toLocaleString()}
+            Persona: {currentStep.personaId.slice(0, 8)} •{' '}
+            {new Date(currentStep.timestampUtc).toLocaleString()}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -246,7 +273,9 @@ export default function Replay() {
           <div>
             <h4 className="text-sm font-medium mb-1">HTTP Status</h4>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm font-medium ${currentStep.httpOutcome.ok ? 'text-green-500' : 'text-red-500'}`}>
+              <span
+                className={`text-sm font-medium ${currentStep.httpOutcome.ok ? 'text-green-500' : 'text-red-500'}`}
+              >
                 {currentStep.httpOutcome.statusCode}
               </span>
               <span className="text-sm text-muted-foreground">
@@ -273,11 +302,16 @@ export default function Replay() {
                 const ArtifactStateIcon = evidenceStateIcons[artifact.state];
                 const artifactStateColor = evidenceStateColors[artifact.state];
                 return (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 bg-secondary rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <ArtifactStateIcon className={`h-4 w-4 ${artifactStateColor}`} />
                       <div>
-                        <p className="text-sm font-medium capitalize">{artifact.artifactType.replace('_', ' ')}</p>
+                        <p className="text-sm font-medium capitalize">
+                          {artifact.artifactType.replace('_', ' ')}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           SHA-256: {artifact.sha256.slice(0, 16)}...
                         </p>
@@ -296,9 +330,7 @@ export default function Replay() {
 
       <div className="flex items-center justify-end space-x-4">
         <Link to={`/runs/${id}/comparison`}>
-          <Button variant="outline">
-            View Comparison
-          </Button>
+          <Button variant="outline">View Comparison</Button>
         </Link>
       </div>
     </div>

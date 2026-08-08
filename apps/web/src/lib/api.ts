@@ -43,7 +43,8 @@ export interface Surface {
 
 export interface Run {
   id: string;
-  status: 'draft' | 'queued' | 'running' | 'completed' | 'partially_completed' | 'failed' | 'cancelled';
+  status:
+    'draft' | 'queued' | 'running' | 'completed' | 'partially_completed' | 'failed' | 'cancelled';
   createdAt: string;
   correlationId?: string;
   journeyVersionId?: string;
@@ -89,7 +90,8 @@ export interface StepEvidence {
     redirectChain: string[];
   };
   artifacts: Array<{
-    artifactType: 'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
+    artifactType:
+      'screenshot' | 'dom_snapshot' | 'text_subset' | 'extraction_payload' | 'console_logs';
     storageKey: string;
     sha256: string;
     state: 'PRESENT' | 'CENSOR_REDACTED' | 'BLOCKED' | 'MISSING_FAILURE';
@@ -97,15 +99,30 @@ export interface StepEvidence {
   overallEvidenceState: 'PRESENT' | 'CENSOR_REDACTED' | 'BLOCKED' | 'MISSING_FAILURE';
 }
 
+export interface ExportRecordResponse {
+  id: string;
+  runId: string;
+  format: 'json' | 'csv';
+  schemaVersion: string;
+  status: 'pending' | 'processing' | 'ready' | 'failed';
+  manifestHash: string;
+  createdAt: string;
+}
+
+export interface ExportDownloadResponse {
+  exportId: string;
+  runId: string;
+  format: 'json' | 'csv';
+  downloadUrl: string;
+  expiresInSeconds: number;
+}
+
 class ApiClient {
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('auth_token');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
+      ...((options.headers as Record<string, string>) || {}),
     };
 
     if (token) {
@@ -157,7 +174,10 @@ class ApiClient {
     return this.request<Run>(`/runs/${id}`);
   }
 
-  async listRuns(limit = 20, offset = 0): Promise<{ items: Run[]; total: number; limit: number; offset: number }> {
+  async listRuns(
+    limit = 20,
+    offset = 0,
+  ): Promise<{ items: Run[]; total: number; limit: number; offset: number }> {
     return this.request(`/runs?limit=${limit}&offset=${offset}`);
   }
 
@@ -173,6 +193,50 @@ class ApiClient {
 
   async getReplay(runId: string): Promise<{ steps: StepEvidence[] }> {
     return this.request<{ steps: StepEvidence[] }>(`/runs/${runId}/replay`);
+  }
+
+  async createExport(
+    runId: string,
+    format: 'json' | 'csv' = 'json',
+  ): Promise<ExportRecordResponse> {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`/api/v1/runs/${runId}/exports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ format }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({
+        detail: 'Failed to create export',
+        status: response.status,
+      }));
+      throw error;
+    }
+
+    return response.json();
+  }
+
+  async getExportDownload(exportId: string): Promise<ExportDownloadResponse> {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`/api/v1/exports/${exportId}/download`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({
+        detail: 'Failed to get export download link',
+        status: response.status,
+      }));
+      throw error;
+    }
+
+    return response.json();
   }
 }
 
