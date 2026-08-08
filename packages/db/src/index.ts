@@ -33,8 +33,27 @@ export {
   getComparisonResultsByRun,
   insertComparisonResult,
 } from './repositories/comparison.js';
+export {
+  createExportRecord,
+  getExportById,
+  updateExportStatus,
+  type CreateExportInput,
+  type ExportResponse,
+} from './repositories/exports.js';
+export {
+  acquireJobLease,
+  renewJobLease,
+  releaseJobLease,
+  recordJobFailureAndRetry,
+  type LeaseAcquireResult,
+} from './repositories/resilience.js';
+export {
+  findStrandedRuns,
+  reconcileStrandedRun,
+  type StrandedRunRecord,
+} from './repositories/reconciliation.js';
 
-export type { ComparisonResult } from '@ai-parallel-web/comparison';
+export type { ComparisonResult } from '@ai-parallel-web/contracts';
 export { seedDevelopmentData } from './seed.js';
 export {
   seedIds,

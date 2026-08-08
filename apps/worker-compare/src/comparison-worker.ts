@@ -5,13 +5,16 @@
  * executes comparison metrics, and persists results.
  */
 
-import type pg from 'pg';
 import { ComparisonEngine, type ComparisonInput } from '@ai-parallel-web/comparison';
 import {
   getStepEvidenceByRun,
   insertComparisonResult,
-  type RunResponse,
 } from '@ai-parallel-web/db';
+
+export interface DbPoolQueryable {
+  query<T = any>(sql: string, params?: any[]): Promise<{ rows: T[] }>;
+  connect(): Promise<any>;
+}
 
 export interface ComparisonJob {
   runId: string;
@@ -21,7 +24,7 @@ export interface ComparisonJob {
 
 export class ComparisonWorker {
   constructor(
-    private pool: pg.Pool,
+    private pool: any,
     private comparisonEngine: ComparisonEngine = new ComparisonEngine()
   ) {}
 
@@ -37,8 +40,8 @@ export class ComparisonWorker {
       const personaIds = job.personaIds;
       for (let i = 0; i < personaIds.length; i++) {
         for (let j = i + 1; j < personaIds.length; j++) {
-          const personaAId = personaIds[i];
-          const personaBId = personaIds[j];
+          const personaAId = personaIds[i]!;
+          const personaBId = personaIds[j]!;
 
           const personaA: ComparisonInput = {
             personaId: personaAId,
@@ -76,7 +79,7 @@ export class ComparisonWorker {
     const evidenceByPersona = new Map<string, any[]>();
     
     for (const evidence of allEvidence) {
-      const personaId = evidence.personaId;
+      const personaId = (evidence as any).personaId ?? (evidence as any).persona_version_id ?? 'default';
       if (!evidenceByPersona.has(personaId)) {
         evidenceByPersona.set(personaId, []);
       }

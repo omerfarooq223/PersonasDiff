@@ -4,6 +4,8 @@ import rateLimit from '@fastify/rate-limit';
 import { buildProblem } from './auth.js';
 import { loadConfig, type ApiConfig } from './config.js';
 import { type AppDependencies, createDependencies } from './dependencies.js';
+import { createBackpressureMiddleware } from './middleware/backpressure.js';
+import { registerExportRoutes } from './routes/exports.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerRunRoutes } from './routes/runs.js';
 
@@ -37,8 +39,11 @@ export async function buildApp(
     timeWindow: config.rateLimitWindowMs,
   });
 
+  app.addHook('onRequest', createBackpressureMiddleware(resolvedDeps.db));
+
   registerHealthRoutes(app, config, resolvedDeps);
   registerRunRoutes(app, config, resolvedDeps);
+  registerExportRoutes(app, resolvedDeps);
 
   app.setErrorHandler((error, request, reply) => {
     request.log.error({ err: error }, 'request failed');

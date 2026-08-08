@@ -63,6 +63,32 @@ export interface RunRow {
   updated_at: Date;
   started_at: Date | null;
   completed_at: Date | null;
+  worker_id?: string | null;
+  lease_expires_at?: Date | null;
+  retry_count?: number;
+  scheduled_at?: Date | null;
+  quarantined_at?: Date | null;
+}
+
+export interface ExportRow {
+  id: string;
+  run_id: string;
+  tenant_id: string;
+  format: 'json' | 'csv';
+  schema_version: string;
+  manifest_hash: string | null;
+  status: 'pending' | 'ready' | 'failed' | 'expired';
+  storage_key: string | null;
+  retention_expires_at: Date | null;
+  created_at: Date;
+}
+
+export interface DeadLetterJobRow {
+  id: string;
+  run_id: string;
+  reason: string;
+  error_stack: string | null;
+  quarantined_at: Date;
 }
 
 export interface RunPersonaRow {

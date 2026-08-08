@@ -7,5 +7,11 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ai-parallel-web/comparison": "0.1.0",
+    "@ai-parallel-web/contracts": "0.1.0",
+    "@ai-parallel-web/db": "0.1.0",
+    "@ai-parallel-web/domain": "0.1.0"
   }
 }

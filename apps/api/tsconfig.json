@@ -1,8 +1,15 @@
 {
   "extends": "../../config/tooling/tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/auth" },
+    { "path": "../../packages/db" },
+    { "path": "../../packages/domain" },
+    { "path": "../../packages/storage" }
+  ]
 }
