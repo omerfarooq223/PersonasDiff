@@ -11,7 +11,10 @@ const outputPath = resolve(rootDir, 'docs/day-8/sbom.json');
 interface PackageLock {
   name?: string;
   version?: string;
-  packages?: Record<string, { version?: string; resolved?: string; integrity?: string; license?: string }>;
+  packages?: Record<
+    string,
+    { version?: string; resolved?: string; integrity?: string; license?: string }
+  >;
 }
 
 export async function generateSbom(): Promise<void> {

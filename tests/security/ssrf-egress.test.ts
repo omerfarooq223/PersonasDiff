@@ -4,7 +4,6 @@ import {
   isForbiddenScheme,
   isPrivateOrLoopbackHost,
   isUrlAllowed,
-  validateSsrfSafety,
   validateUrlAgainstPolicy,
   PolicyViolationError,
 } from '../../apps/worker-browser/src/policy-enforcer.js';
@@ -67,9 +66,9 @@ describe('SSRF & Egress Security Controls', () => {
     expect(() => validateUrlAgainstPolicy('http://127.0.0.1/admin', policy)).toThrow(
       PolicyViolationError,
     );
-    expect(() => validateUrlAgainstPolicy('http://169.254.169.254/latest/meta-data/', policy)).toThrow(
-      PolicyViolationError,
-    );
+    expect(() =>
+      validateUrlAgainstPolicy('http://169.254.169.254/latest/meta-data/', policy),
+    ).toThrow(PolicyViolationError);
     expect(() => validateUrlAgainstPolicy('file:///etc/hosts', policy)).toThrow(
       PolicyViolationError,
     );

@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 
 import { buildProblem } from './auth.js';
@@ -55,12 +55,13 @@ export async function buildApp(
   registerRunRoutes(app, config, resolvedDeps);
   registerExportRoutes(app, resolvedDeps);
 
-  app.setErrorHandler((error, request, reply) => {
+  app.setErrorHandler((error: FastifyError | Error | unknown, request, reply) => {
     request.log.error({ err: error }, 'request failed');
-    const status = error.statusCode ?? 500;
+    const errObj = error as { statusCode?: number; message?: string } | null | undefined;
+    const status = errObj?.statusCode ?? 500;
     void reply.status(status).send(
       buildProblem({
-        detail: error.message || 'The request could not be completed.',
+        detail: errObj?.message || 'The request could not be completed.',
         requestId: request.id,
         status,
         title: status === 429 ? 'Too Many Requests' : 'Internal Server Error',

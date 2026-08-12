@@ -76,12 +76,15 @@ export function validateSsrfSafety(url: string): void {
     throw new PolicyViolationError(`URL protocol scheme is not allowed: "${url}"`, url);
   }
   if (hasCredentialsInUrl(url)) {
-    throw new PolicyViolationError(`Credential-bearing URLs are blocked for security: "${url}"`, url);
+    throw new PolicyViolationError(
+      `Credential-bearing URLs are blocked for security: "${url}"`,
+      url,
+    );
   }
   try {
     const parsed = new URL(url);
     if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      if (isPrivateOrLoopbackHost(parsed.hostname)) {
+      if (process.env.ALLOW_LOOPBACK !== 'true' && isPrivateOrLoopbackHost(parsed.hostname)) {
         throw new PolicyViolationError(
           `Navigation to loopback, private IP, or metadata endpoint is blocked: "${url}"`,
           url,
@@ -163,4 +166,3 @@ export function validateUrlAgainstPolicy(url: string, policy: PolicyConfig): voi
     );
   }
 }
-

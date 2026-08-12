@@ -8,12 +8,12 @@ This runbook outlines the response procedure for handling security incidents, SS
 
 ## Incident Severity Levels
 
-| Level | Criteria | Example | Immediate Action |
-| --- | --- | --- | --- |
-| **SEV-1 (Critical)** | Active data exfiltration, system compromise, or SSRF escape | Cloud IMDS credential access | Isolate API/workers, revoke active tokens, initiate emergency patch |
-| **SEV-2 (High)** | Secret exposure in logs, cross-tenant auth bug | Unredacted bearer token in logs | Rotate exposed credential, trigger audit review, purge log line |
-| **SEV-3 (Medium)** | Queue abuse, unapproved surface target attempt | Repeated 403 on unapproved surface | Block tenant rate limit, review surface policy |
-| **SEV-4 (Low)** | Minor compliance or documentation discrepancy | Missing field in data map | Schedule backlog fix |
+| Level                | Criteria                                                    | Example                            | Immediate Action                                                    |
+| -------------------- | ----------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| **SEV-1 (Critical)** | Active data exfiltration, system compromise, or SSRF escape | Cloud IMDS credential access       | Isolate API/workers, revoke active tokens, initiate emergency patch |
+| **SEV-2 (High)**     | Secret exposure in logs, cross-tenant auth bug              | Unredacted bearer token in logs    | Rotate exposed credential, trigger audit review, purge log line     |
+| **SEV-3 (Medium)**   | Queue abuse, unapproved surface target attempt              | Repeated 403 on unapproved surface | Block tenant rate limit, review surface policy                      |
+| **SEV-4 (Low)**      | Minor compliance or documentation discrepancy               | Missing field in data map          | Schedule backlog fix                                                |
 
 ---
 

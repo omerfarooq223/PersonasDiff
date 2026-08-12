@@ -6,14 +6,14 @@ This document maps all data collected, processed, and stored by the **AI Paralle
 
 ## Field-by-Field Data Map
 
-| Data Category | Field / Element | Purpose / Justification | Retention Schedule | Deletion Path |
-| --- | --- | --- | --- | --- |
-| Run Metadata | `run_id`, `tenant_id`, `created_by` | Run tracking and RBAC authorization | 90 days | Cascading DB purge via `retention-deletion-workflow.ts` |
-| Journey Steps | `action_type`, `target_selector`, `url` | Execution replay and visual diff comparison | 30 days | Automated evidence reconciliation job |
-| Network Evidence | `final_url`, `http_status`, `redirect_chain` | Evidence-first web journey verification | 30 days | Storage S3 lifecycle policy |
-| DOM Snapshots | `raw_html`, `sanitized_html` | Visual replay & DOM structure diff | 30 days | S3 bucket object expiration |
-| Visual Artifacts | Screenshots (`.png`), trace logs | Screenshot comparison metrics | 30 days | Hard deletion log audit (`logDeletionAudit`) |
-| Audit Logs | `actor_id`, `action`, `timestamp`, `ip` | Security compliance and accountability | 365 days | Archived append-only audit store |
+| Data Category    | Field / Element                              | Purpose / Justification                     | Retention Schedule | Deletion Path                                           |
+| ---------------- | -------------------------------------------- | ------------------------------------------- | ------------------ | ------------------------------------------------------- |
+| Run Metadata     | `run_id`, `tenant_id`, `created_by`          | Run tracking and RBAC authorization         | 90 days            | Cascading DB purge via `retention-deletion-workflow.ts` |
+| Journey Steps    | `action_type`, `target_selector`, `url`      | Execution replay and visual diff comparison | 30 days            | Automated evidence reconciliation job                   |
+| Network Evidence | `final_url`, `http_status`, `redirect_chain` | Evidence-first web journey verification     | 30 days            | Storage S3 lifecycle policy                             |
+| DOM Snapshots    | `raw_html`, `sanitized_html`                 | Visual replay & DOM structure diff          | 30 days            | S3 bucket object expiration                             |
+| Visual Artifacts | Screenshots (`.png`), trace logs             | Screenshot comparison metrics               | 30 days            | Hard deletion log audit (`logDeletionAudit`)            |
+| Audit Logs       | `actor_id`, `action`, `timestamp`, `ip`      | Security compliance and accountability      | 365 days           | Archived append-only audit store                        |
 
 ## Data Minimization Controls
 

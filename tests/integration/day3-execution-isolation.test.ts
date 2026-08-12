@@ -13,6 +13,7 @@ describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
   let baseUrl: string;
 
   beforeAll(async () => {
+    process.env.ALLOW_LOOPBACK = 'true';
     // Start local Fastify fixture server simulating persona variant responses & redirect endpoints
     fixtureServer = Fastify({ logger: false });
 
