@@ -4,7 +4,6 @@
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, SRE
 - **Reviewers:** Security/Privacy, Browser Engineer
-- **Decision deadline:** End of Day 1
 - **Related requirements:** AC-08 Performance, AC-09 Security, AC-10 Operations
 
 ## Context
@@ -23,4 +22,4 @@ Use one monorepo and independently buildable containers for the web UI, API, bro
 
 ## Validation and rollback
 
-Day 1 proves container build and staging API health. The precise orchestrator and autoscaling settings remain provisional until expected load is measured.
+Container builds and staging API health checks validate deployment. Orchestrator and autoscaling settings are tuned to observed workload.

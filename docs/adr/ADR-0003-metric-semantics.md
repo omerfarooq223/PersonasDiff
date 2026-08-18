@@ -4,7 +4,6 @@
 - **Date:** 2026-08-02
 - **Owners:** Product Owner, Tech Lead
 - **Reviewers:** Security/Privacy/Ethics, QA
-- **Decision deadline:** End of Day 1 for semantics; thresholds remain provisional through Day 5
 - **Related requirements:** AC-05 Comparison correctness
 
 ## Context
@@ -23,4 +22,4 @@ Persist each metric's raw inputs, normalized inputs, algorithm version, result, 
 
 ## Validation and rollback
 
-Day 5 golden fixtures and same-persona control runs validate semantics and thresholds. A defective metric version is withdrawn without rewriting prior outputs.
+Golden fixtures and same-persona control runs validate semantics and thresholds. A defective metric version is withdrawn without rewriting prior outputs.

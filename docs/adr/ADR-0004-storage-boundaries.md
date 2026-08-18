@@ -4,7 +4,6 @@
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, Backend Engineer
 - **Reviewers:** Security/Privacy, SRE
-- **Decision deadline:** End of Day 1
 - **Related requirements:** AC-04 Evidence, AC-07 Export, AC-10 Operations
 
 ## Context
@@ -23,4 +22,4 @@ Use PostgreSQL for configuration, run state, metadata, and audit references; S3-
 
 ## Validation and rollback
 
-The Day 1 spike uploads a manifest to local S3-compatible storage. Day 2 validates transactional state and idempotency.
+Object storage integration uploads manifests to S3-compatible storage. Database migrations validate transactional state and idempotency.

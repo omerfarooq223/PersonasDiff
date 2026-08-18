@@ -4,7 +4,6 @@
 - **Date:** 2026-08-02
 - **Owners:** Tech Lead, Backend Engineer
 - **Reviewers:** Security/Privacy, SRE
-- **Decision deadline:** End of Day 1
 - **Related requirements:** AC-04 Evidence completeness, AC-06 Replay, AC-07 Export
 
 ## Context
