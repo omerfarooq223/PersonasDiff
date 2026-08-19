@@ -172,7 +172,7 @@ export default function RunList() {
             className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all active:scale-95"
           >
             <Play className="h-4 w-4 fill-current" />
-            <span>Launch Comparison</span>
+            <span>Launch Live Audit</span>
           </Link>
         </div>
       </div>
@@ -288,7 +288,7 @@ export default function RunList() {
               <TrendingUp className="h-3 w-3 mr-0.5" /> 100% Proven
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Multi-persona audit journeys</p>
+          <p className="text-xs text-slate-500 mt-1">Total audit sessions launched</p>
         </div>
 
         <div className="glass-card p-5 rounded-2xl relative overflow-hidden group">
@@ -307,7 +307,7 @@ export default function RunList() {
             </span>
             <span className="text-xs text-slate-400 font-medium">Ready for Replay</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">100% Evidence Complete</p>
+          <p className="text-xs text-slate-500 mt-1">Runs with 100% verified evidence ready</p>
         </div>
 
         <div className="glass-card p-5 rounded-2xl relative overflow-hidden group">
@@ -324,7 +324,9 @@ export default function RunList() {
             <span className="text-3xl font-bold text-white tracking-tight">+$8.00 / Rank 1</span>
             <span className="text-xs text-purple-400 font-medium">Delta</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Observed under recorded conditions</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Differential shifts detected between personas
+          </p>
         </div>
 
         <div className="glass-card p-5 rounded-2xl relative overflow-hidden group">
@@ -341,7 +343,9 @@ export default function RunList() {
             <span className="text-3xl font-bold text-white tracking-tight">0% Leakage</span>
             <span className="text-xs text-emerald-400 font-medium">Verified</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">SSRF Guard & Fresh Contexts</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Zero session leaks between parallel browsers
+          </p>
         </div>
       </div>
 

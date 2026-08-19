@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  Activity,
   Play,
   ShieldCheck,
   CheckCircle2,
   ExternalLink,
   ChevronDown,
   KeyRound,
-  Sparkles,
   Layers,
 } from 'lucide-react';
 
@@ -38,7 +36,6 @@ const ROLES = [
 ] as const;
 
 export default function Layout({ children }: LayoutProps) {
-  const location = useLocation();
   const [currentRole, setCurrentRole] = useState<(typeof ROLES)[number]>(ROLES[0]);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
@@ -92,42 +89,21 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </Link>
 
-              {/* Navigation Links */}
-              <nav className="hidden md:flex items-center space-x-1">
-                <Link
-                  to="/runs"
-                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                    location.pathname === '/runs' || location.pathname === '/'
-                      ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
-                >
-                  <Activity className="h-4 w-4" />
-                  <span>Runs Dashboard</span>
-                </Link>
-                <Link
-                  to="/runs/new"
-                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                    location.pathname === '/runs/new'
-                      ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
-                >
-                  <Sparkles className="h-4 w-4 text-purple-400" />
-                  <span>New Comparison</span>
-                </Link>
-              </nav>
+              {/* Brand Description Tag */}
+              <div className="hidden lg:flex items-center space-x-2 pl-4 border-l border-white/10 text-xs text-slate-400">
+                <span>Zero State Contamination</span>
+              </div>
             </div>
 
             {/* Right: Telemetry Badges & Role Controls */}
             <div className="flex items-center space-x-3">
               {/* System Connectivity Pill */}
-              <div className="hidden lg:flex items-center space-x-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
+              <div className="hidden sm:flex items-center space-x-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span>API & Fixture Online</span>
+                <span>API Infrastructure Online</span>
               </div>
 
               {/* Role Switcher Menu */}
@@ -168,13 +144,13 @@ export default function Layout({ children }: LayoutProps) {
                 )}
               </div>
 
-              {/* Launch Run Action */}
+              {/* Single Consolidated Action Button */}
               <Link
                 to="/runs/new"
-                className="hidden sm:inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all active:scale-95"
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all active:scale-95"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
-                <span>Launch Run</span>
+                <span>Launch Live Audit</span>
               </Link>
             </div>
           </div>
