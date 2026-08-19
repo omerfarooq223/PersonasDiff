@@ -1,4 +1,4 @@
--- Day 2 initial schema: tenants, auth, surfaces, journeys, personas, runs, audit, idempotency
+-- Initial schema: tenants, auth, surfaces, journeys, personas, runs, audit, idempotency
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 

@@ -7,7 +7,7 @@ import type {
 } from '@ai-parallel-web/contracts';
 import { WorkerPool, isUrlAllowed } from '../../apps/worker-browser/src/index.js';
 
-describe('Day 3 - Isolated Playwright Execution & Gate Criteria', () => {
+describe('Isolated Playwright Execution & Gate Criteria', () => {
   let fixtureServer: FastifyInstance;
   let serverPort: number;
   let baseUrl: string;

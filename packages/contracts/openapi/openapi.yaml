@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: AI Parallel Web API
   version: 0.1.0
-  description: Day 2 API baseline with run orchestration and authorization controls.
+  description: AI Parallel Web API with run orchestration and authorization controls.
 servers:
   - url: http://localhost:3000
     description: Local development

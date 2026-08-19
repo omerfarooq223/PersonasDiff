@@ -1,4 +1,4 @@
--- Day 7 migration: resilience columns, dead_letter_jobs, exports enhancements
+-- Migration: resilience columns, dead_letter_jobs, exports enhancements
 
 ALTER TABLE runs
   ADD COLUMN IF NOT EXISTS worker_id TEXT,

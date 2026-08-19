@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, '../../');
 const lockfilePath = resolve(rootDir, 'package-lock.json');
 const pkgPath = resolve(rootDir, 'package.json');
-const outputPath = resolve(rootDir, 'docs/day-8/sbom.json');
+const outputPath = resolve(rootDir, 'docs/security/sbom.json');
 
 interface PackageLock {
   name?: string;

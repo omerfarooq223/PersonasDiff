@@ -100,18 +100,18 @@ export default function RunList() {
     setSimRunning(true);
     setSimStep(1);
     setSimLogs([
-      `[${new Date().toISOString()}] [INFO] Initializing PersonaDiff Orchestrator...`,
-      `[${new Date().toISOString()}] [INFO] Allocating fresh Chromium context for Persona A (Control)...`,
-      `[${new Date().toISOString()}] [INFO] Allocating fresh Chromium context for Persona B (Variant)...`,
+      `[1/4] 🚀 Launching two separate Google Chrome browsers in parallel...`,
+      `[1/4] 👤 Setting up Persona A (Desktop / US Chrome) in a sandboxed session...`,
+      `[1/4] 📱 Setting up Persona B (Mobile / UK Safari) in a sandboxed session...`,
     ]);
 
     setTimeout(() => {
       setSimStep(2);
       setSimLogs((prev) => [
         ...prev,
-        `[${new Date().toISOString()}] [SECURITY] SSRF Gate: Origin http://localhost:4300 approved via surface policy.`,
-        `[${new Date().toISOString()}] [NET] Persona A navigating to http://localhost:4300/fixture?persona=control`,
-        `[${new Date().toISOString()}] [NET] Persona B navigating to http://localhost:4300/fixture?persona=variant`,
+        `[2/4] 🌐 Persona A visiting target website (1280x720 desktop resolution)...`,
+        `[2/4] 🌐 Persona B visiting target website at the exact same millisecond (390x844 mobile resolution)...`,
+        `[2/4] 🛡️ Verifying zero session leaks between the two browsers...`,
       ]);
     }, 1200);
 
@@ -119,9 +119,9 @@ export default function RunList() {
       setSimStep(3);
       setSimLogs((prev) => [
         ...prev,
-        `[${new Date().toISOString()}] [CAPTURE] Captured 1280x720 screenshot for Persona A (SHA: a1b2c3...)`,
-        `[${new Date().toISOString()}] [CAPTURE] Captured 1280x720 screenshot for Persona B (SHA: 112233...)`,
-        `[${new Date().toISOString()}] [PRIVACY] Pre-storage redaction applied: 0 PII tokens detected in DOM.`,
+        `[3/4] 📸 Capturing high-resolution viewport screenshots for both visitor devices...`,
+        `[3/4] 📄 Extracting webpage text, product names, headlines, and prices...`,
+        `[3/4] 🔒 Privacy check: Redacted all personal tokens and emails from data before saving.`,
       ]);
     }, 2400);
 
@@ -129,11 +129,12 @@ export default function RunList() {
       setSimStep(4);
       setSimLogs((prev) => [
         ...prev,
-        `[${new Date().toISOString()}] [COMPARE] Evaluating DOM Jaccard similarity: 0.742`,
-        `[${new Date().toISOString()}] [COMPARE] Detected price delta: +$8.00 (+80.0%) on top product card`,
-        `[${new Date().toISOString()}] [COMPARE] Detected rank substitution: Product Alpha (Control) vs Product Beta (Variant)`,
-        `[${new Date().toISOString()}] [VERIFY] Generated immutable cryptographic manifest (SHA-256: 7f8a9b...).`,
-        `[${new Date().toISOString()}] [SUCCESS] Comparative audit completed with HIGH confidence.`,
+        `[4/4] 📊 Comparing differences between Persona A and Persona B:`,
+        `      • DOM Layout Overlap: 74.2%`,
+        `      • Text Content Match: 81.5%`,
+        `      • Pricing Shift Detected: +$8.00 on featured item`,
+        `      • Product Ranking: Variant persona received a substituted product at Rank #1`,
+        `[4/4] ✅ Audit complete! Generated verified evidence report.`,
       ]);
       setSimRunning(false);
     }, 3600);

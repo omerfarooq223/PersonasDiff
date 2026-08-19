@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Day 7 Infrastructure Backup Script
+# Infrastructure Backup Script
 # Creates PostgreSQL pg_dump snapshot and artifact checksum manifest.
 
 TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")

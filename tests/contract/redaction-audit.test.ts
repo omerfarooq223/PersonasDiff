@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RedactionEngine } from '@ai-parallel-web/capture';
 
-describe('Day 4: Redaction Engine & Auditability', () => {
+describe('Redaction Engine & Auditability', () => {
   it('redacts sensitive query parameters from URLs and records audit log', () => {
     const engine = new RedactionEngine();
     const rawUrl = 'https://example.com/checkout?token=secret_abc123&api_key=key_xyz789&item=book';

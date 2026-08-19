@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Dark Disc -->
+  <rect width="32" height="32" rx="8" fill="#0B0F19" />
+  <rect width="32" height="32" rx="8" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+
+  <!-- Multi-Layer Persona Prism / Diff Shapes -->
+  <path d="M7 11L16 6L25 11L16 16L7 11Z" fill="url(#g1)" filter="url(#glow)" opacity="0.95" />
+  <path d="M7 16L16 21L25 16" stroke="url(#g2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M7 21L16 26L25 21" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+</svg>

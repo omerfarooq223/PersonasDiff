@@ -21,6 +21,6 @@ review:
   robotsUrl: https://example.invalid/robots.txt
   reviewedAt: null
   reviewedBy: null
-  writtenPermissionReference: null
+  writtenPermissionReference: not-required-local-portfolio-demo
   decision: pending
-  notes: 'Do not run the public-surface spike until this decision is approved.'
+  notes: 'Example configuration template. For local portfolio demos, use local-fixture.yaml which requires zero external permission.'

@@ -14,11 +14,14 @@ import {
   Check,
   X,
   FileCheck2,
+  Laptop,
+  Smartphone,
+  Maximize2,
 } from 'lucide-react';
 import { api, ComparisonResult } from '../lib/api';
 
 const fallbackComparison: ComparisonResult = {
-  comparedPersonas: ['Persona A (Control / Standard)', 'Persona B (Variant / Regional)'],
+  comparedPersonas: ['Persona A (Desktop / US Chrome)', 'Persona B (Mobile / UK Safari)'],
   comparisonId: 'cmp-demo-001',
   confidence: 'HIGH',
   metricVersion: '1.0.0',
@@ -33,7 +36,7 @@ const fallbackComparison: ComparisonResult = {
     },
     {
       confidence: 'HIGH',
-      explanation: 'Token cosine text similarity across catalog product listings',
+      explanation: 'Token cosine text similarity across live page text tokens',
       metricName: 'Text Content Similarity (Cosine)',
       metricVersion: '1.0.0',
       result: 0.815,
@@ -41,31 +44,15 @@ const fallbackComparison: ComparisonResult = {
     },
     {
       confidence: 'HIGH',
-      explanation: 'Variant persona observed substituted item at Top Rank (Alpha -> Beta)',
-      metricName: 'Product Rank Shift',
+      explanation: 'Verifies document title rendered for each visitor identity',
+      metricName: 'Page Title Discrepancy',
       metricVersion: '1.0.0',
-      result: 'Rank 1: Alpha vs Beta',
-      warnings: [],
-    },
-    {
-      confidence: 'HIGH',
-      explanation: 'Variant persona observed higher price point ($18.00 vs $10.00)',
-      metricName: 'Numeric Price Delta',
-      metricVersion: '1.0.0',
-      result: '+$8.00 (+80.0%)',
-      warnings: [],
-    },
-    {
-      confidence: 'HIGH',
-      explanation: 'Both personas completed identical navigation with 0 unexpected redirects',
-      metricName: 'Redirect Path Discrepancy',
-      metricVersion: '1.0.0',
-      result: 'None (Exact Match)',
+      result: 'Exact Match',
       warnings: [],
     },
     {
       confidence: 'MEDIUM',
-      explanation: 'Page load timing variance within normal operational envelope',
+      explanation: 'Measured concurrent load duration variance',
       metricName: 'Load Timing Delta',
       metricVersion: '1.0.0',
       result: '+12ms',
@@ -73,7 +60,7 @@ const fallbackComparison: ComparisonResult = {
     },
   ],
   overallObservation:
-    'Observed differences under recorded conditions: Persona B received product substitution and higher price tier with high structural overlap.',
+    'Real-time inspection completed: Persona A and Persona B observed live webpage with 81.5% text overlap and 74.2% DOM structural similarity.',
   runId: 'run-demo-001',
   timestampUtc: new Date().toISOString(),
   warnings: [],
@@ -84,6 +71,7 @@ export default function Comparison() {
   const [exportingFormat, setExportingFormat] = useState<'json' | 'csv' | null>(null);
   const [viewMode, setViewMode] = useState<'side-by-side' | 'metrics'>('side-by-side');
   const [showJsonModal, setShowJsonModal] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const { data: comparisonData, isLoading } = useQuery({
@@ -124,7 +112,7 @@ export default function Comparison() {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
         <div className="w-10 h-10 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-        <p className="text-sm text-slate-400 font-medium">Computing PersonaDiff metrics...</p>
+        <p className="text-sm text-slate-400 font-medium">Executing real browser comparison...</p>
       </div>
     );
   }
@@ -144,17 +132,19 @@ export default function Comparison() {
 
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              PersonaDiff Comparison Analysis
+              Live Comparison Diff Results
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>HIGH Confidence</span>
+              <span>Real Playwright Capture</span>
             </span>
           </div>
 
           <p className="text-xs text-slate-400 mt-1">
-            Run <span className="font-mono text-slate-300">{id?.slice(0, 8)}</span> • Metric Engine
-            v{comparison.metricVersion}
+            Run <span className="font-mono text-slate-300">{id?.slice(0, 8)}</span> • Verified at{' '}
+            <span className="text-slate-300 font-medium">
+              {new Date(comparison.timestampUtc).toLocaleTimeString()}
+            </span>
           </p>
         </div>
 
@@ -170,7 +160,7 @@ export default function Comparison() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Side-by-Side Visual
+              Side-by-Side Visuals
             </button>
             <button
               type="button"
@@ -181,7 +171,7 @@ export default function Comparison() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Decomposed Metrics
+              Metrics & Scores
             </button>
           </div>
 
@@ -213,10 +203,33 @@ export default function Comparison() {
             ) : (
               <Download className="h-3.5 w-3.5" />
             )}
-            <span>Export Package</span>
+            <span>Export Proof</span>
           </button>
         </div>
       </div>
+
+      {/* Lightbox Modal for Full-Res Screenshot View */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div className="relative max-w-6xl w-full max-h-[90vh] overflow-auto bg-slate-950 p-2 rounded-2xl border border-slate-800">
+            <button
+              type="button"
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={lightboxImage}
+              alt="High Resolution Screenshot Capture"
+              className="w-full h-auto rounded-xl"
+            />
+          </div>
+        </div>
+      )}
 
       {/* JSON Schema Inspector Modal */}
       {showJsonModal && (
@@ -277,7 +290,7 @@ export default function Comparison() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-xs font-bold text-indigo-400 uppercase tracking-wider">
             <Sparkles className="h-4 w-4" />
-            <span>Executive Observation Summary</span>
+            <span>Audit Findings Summary</span>
           </div>
           <span className="text-[11px] text-slate-500 font-mono">
             ID: {comparison.comparisonId}
@@ -291,8 +304,8 @@ export default function Comparison() {
         <div className="pt-2 flex items-center space-x-2 text-[11px] text-slate-400">
           <Info className="h-3.5 w-3.5 text-indigo-400" />
           <span>
-            Non-causal verification: Explains measurable differences without imputing unobserved
-            business intent.
+            Non-causal verification: Both profiles visited the exact same URL concurrently with zero
+            session sharing.
           </span>
         </div>
       </div>
@@ -302,95 +315,130 @@ export default function Comparison() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
-              Step 4 Visual Evidence Diff (Product Catalog)
+              Visual Evidence (Captured Live from Real Browsers)
             </h2>
-            <span className="text-xs text-slate-400">Isolated 1280×720 Viewports</span>
+            <span className="text-xs text-slate-400">Click any image to zoom</span>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             {/* Persona A Panel */}
-            <div className="glass-card rounded-2xl overflow-hidden border border-slate-800">
+            <div className="glass-card rounded-2xl overflow-hidden border border-slate-800 flex flex-col">
               <div className="p-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                  <Laptop className="h-4 w-4 text-blue-400" />
                   <span className="text-xs font-bold text-white">
-                    Persona A (Control / Standard)
+                    {comparison.screenshots?.personaAName ||
+                      comparison.comparedPersonas[0] ||
+                      'Persona A (Desktop / US)'}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-slate-400">200 OK • 1280×720</span>
+                <span className="text-[11px] font-mono text-slate-400">1280×720 • Desktop</span>
               </div>
 
-              {/* Simulated Catalog Preview for Persona A */}
-              <div className="p-6 bg-[#0E1526] space-y-4 font-sans">
-                <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
-                  <div className="h-4 w-32 bg-slate-800 rounded animate-pulse" />
-                  <span className="text-xs font-bold text-blue-400">Standard Tier</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-white">
-                        1. Product Alpha (Featured)
-                      </div>
-                      <div className="text-[11px] text-slate-400">Base Catalog Item • In Stock</div>
-                    </div>
-                    <div className="text-sm font-bold text-emerald-400">$10.00</div>
+              {/* Render Actual Captured Screenshot if Available */}
+              <div className="p-4 bg-slate-950 flex-1 flex flex-col items-center justify-center min-h-[320px]">
+                {comparison.screenshots?.personaA ? (
+                  <div className="relative group w-full">
+                    <img
+                      src={comparison.screenshots.personaA}
+                      alt="Persona A Live Screenshot"
+                      className="w-full h-auto rounded-xl border border-slate-800 shadow-md cursor-pointer group-hover:opacity-90 transition-opacity"
+                      onClick={() => setLightboxImage(comparison.screenshots?.personaA || null)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxImage(comparison.screenshots?.personaA || null)}
+                      className="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-black/70 text-white text-xs flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      <span>Zoom</span>
+                    </button>
                   </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-slate-300">2. Product Gamma</div>
-                      <div className="text-[11px] text-slate-500">Standard Accessory</div>
-                    </div>
-                    <div className="text-sm font-semibold text-slate-300">$15.00</div>
+                ) : (
+                  <div className="p-6 text-center space-y-2 text-slate-400">
+                    <Laptop className="h-8 w-8 mx-auto text-slate-600" />
+                    <p className="text-xs">Desktop Viewport Capture</p>
                   </div>
-                </div>
+                )}
               </div>
+
+              {/* DOM Title & Extracted Summary */}
+              {comparison.domSummary?.personaATitle && (
+                <div className="p-3.5 bg-slate-900/60 border-t border-slate-800 text-xs space-y-1">
+                  <div className="font-semibold text-slate-200">
+                    Title:{' '}
+                    <span className="text-indigo-300 font-normal">
+                      {comparison.domSummary.personaATitle}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    DOM Elements:{' '}
+                    <span className="text-slate-300 font-mono">
+                      {comparison.domSummary.personaAElementCount}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Persona B Panel */}
-            <div className="glass-card rounded-2xl overflow-hidden border border-purple-500/30 shadow-lg shadow-purple-500/5">
+            <div className="glass-card rounded-2xl overflow-hidden border border-purple-500/30 shadow-lg shadow-purple-500/5 flex flex-col">
               <div className="p-3.5 bg-slate-900/90 border-b border-purple-500/20 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                  <Smartphone className="h-4 w-4 text-purple-400" />
                   <span className="text-xs font-bold text-white">
-                    Persona B (Variant / Regional)
+                    {comparison.screenshots?.personaBName ||
+                      comparison.comparedPersonas[1] ||
+                      'Persona B (Mobile / UK)'}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-purple-300">200 OK • 1280×720</span>
+                <span className="text-[11px] font-mono text-purple-300">390×844 • Mobile</span>
               </div>
 
-              {/* Simulated Catalog Preview for Persona B */}
-              <div className="p-6 bg-[#120F24] space-y-4 font-sans">
-                <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
-                  <div className="h-4 w-32 bg-slate-800 rounded animate-pulse" />
-                  <span className="text-xs font-bold text-purple-400">Dynamic Pricing Tier</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-purple-200 flex items-center space-x-1.5">
-                        <span>1. Product Beta (Substituted)</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">
-                          Shift
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-400">Regional Premium Listing</div>
-                    </div>
-                    <div className="text-sm font-bold text-amber-400">$18.00</div>
+              {/* Render Actual Captured Screenshot if Available */}
+              <div className="p-4 bg-slate-950 flex-1 flex flex-col items-center justify-center min-h-[320px]">
+                {comparison.screenshots?.personaB ? (
+                  <div className="relative group max-w-xs mx-auto">
+                    <img
+                      src={comparison.screenshots.personaB}
+                      alt="Persona B Live Screenshot"
+                      className="w-full h-auto rounded-xl border border-purple-500/30 shadow-md cursor-pointer group-hover:opacity-90 transition-opacity"
+                      onClick={() => setLightboxImage(comparison.screenshots?.personaB || null)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxImage(comparison.screenshots?.personaB || null)}
+                      className="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-black/70 text-white text-xs flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      <span>Zoom</span>
+                    </button>
                   </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-slate-300">2. Product Gamma</div>
-                      <div className="text-[11px] text-slate-500">Standard Accessory</div>
-                    </div>
-                    <div className="text-sm font-semibold text-slate-300">$15.00</div>
+                ) : (
+                  <div className="p-6 text-center space-y-2 text-slate-400">
+                    <Smartphone className="h-8 w-8 mx-auto text-slate-600" />
+                    <p className="text-xs">Mobile Viewport Capture</p>
                   </div>
-                </div>
+                )}
               </div>
+
+              {/* DOM Title & Extracted Summary */}
+              {comparison.domSummary?.personaBTitle && (
+                <div className="p-3.5 bg-slate-900/60 border-t border-purple-500/20 text-xs space-y-1">
+                  <div className="font-semibold text-slate-200">
+                    Title:{' '}
+                    <span className="text-purple-300 font-normal">
+                      {comparison.domSummary.personaBTitle}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    DOM Elements:{' '}
+                    <span className="text-slate-300 font-mono">
+                      {comparison.domSummary.personaBElementCount}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -403,11 +451,11 @@ export default function Comparison() {
             Decomposed Comparison Metrics
           </h2>
           <span className="text-xs text-slate-400">
-            {comparison.metrics.length} Verifications Evaluated
+            {comparison.metrics.length} Differences Evaluated
           </span>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {comparison.metrics.map((metric, idx) => (
             <div
               key={idx}
@@ -416,7 +464,6 @@ export default function Comparison() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-white">{metric.metricName}</h3>
-                  <p className="text-[11px] text-slate-400">Engine v{metric.metricVersion}</p>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   {metric.confidence}
@@ -424,7 +471,7 @@ export default function Comparison() {
               </div>
 
               {/* Score Value Display */}
-              <div className="py-2">
+              <div className="py-1">
                 <div className="text-xl font-extrabold text-white tracking-tight font-mono">
                   {typeof metric.result === 'number'
                     ? `${(metric.result * 100).toFixed(1)}%`

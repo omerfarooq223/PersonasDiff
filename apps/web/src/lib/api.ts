@@ -56,6 +56,8 @@ export interface CreateRunRequest {
   journeyVersionId: string;
   personaVersionIds: string[];
   surfaceId: string;
+  customSurfaceUrl?: string;
+  customSurfaceName?: string;
 }
 
 export interface ComparisonResult {
@@ -75,6 +77,20 @@ export interface ComparisonResult {
   overallObservation: string;
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   warnings: string[];
+  screenshots?: {
+    personaA?: string;
+    personaB?: string;
+    personaAName?: string;
+    personaBName?: string;
+  };
+  domSummary?: {
+    personaATitle?: string;
+    personaBTitle?: string;
+    personaATextSnippet?: string;
+    personaBTextSnippet?: string;
+    personaAElementCount?: number;
+    personaBElementCount?: number;
+  };
 }
 
 export interface StepEvidence {
@@ -84,6 +100,8 @@ export interface StepEvidence {
   stepIndex: number;
   timestampUtc: string;
   finalUrl: string;
+  screenshotUrl?: string;
+  domTextSnippet?: string;
   httpOutcome: {
     statusCode: number;
     ok: boolean;
@@ -117,35 +135,49 @@ export interface ExportDownloadResponse {
   expiresInSeconds: number;
 }
 
+const DEFAULT_TOKEN = 'pw-operator-token-dev-only-001';
+
+// Auto-initialize auth token in development
+if (typeof window !== 'undefined' && !localStorage.getItem('auth_token')) {
+  localStorage.setItem('auth_token', DEFAULT_TOKEN);
+}
+
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('auth_token');
+    let token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) {
+      token = DEFAULT_TOKEN;
+      if (typeof window !== 'undefined') localStorage.setItem('auth_token', DEFAULT_TOKEN);
+    }
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          detail: 'An unknown error occurred',
+          requestId: '',
+          status: response.status,
+          title: 'Error',
+          type: 'unknown',
+        }));
+        throw error as ApiError;
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.warn(`[ApiClient] Request to ${endpoint} failed, checking mock fallback...`, err);
+      throw err;
     }
-
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        detail: 'An unknown error occurred',
-        requestId: '',
-        status: response.status,
-        title: 'Error',
-        type: 'unknown',
-      }));
-      throw error as ApiError;
-    }
-
-    return response.json();
   }
 
   async getPersonas(): Promise<PersonaVersion[]> {
@@ -199,44 +231,14 @@ class ApiClient {
     runId: string,
     format: 'json' | 'csv' = 'json',
   ): Promise<ExportRecordResponse> {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`/api/v1/runs/${runId}/exports`, {
+    return this.request<ExportRecordResponse>(`/runs/${runId}/exports`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: JSON.stringify({ format }),
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        detail: 'Failed to create export',
-        status: response.status,
-      }));
-      throw error;
-    }
-
-    return response.json();
   }
 
   async getExportDownload(exportId: string): Promise<ExportDownloadResponse> {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`/api/v1/exports/${exportId}/download`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        detail: 'Failed to get export download link',
-        status: response.status,
-      }));
-      throw error;
-    }
-
-    return response.json();
+    return this.request<ExportDownloadResponse>(`/exports/${exportId}/download`);
   }
 }
 

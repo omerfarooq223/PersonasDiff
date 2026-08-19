@@ -6,19 +6,33 @@ export class BrowserManager {
 
   async getBrowser(): Promise<Browser> {
     if (!this.browserInstance || !this.browserInstance.isConnected()) {
-      this.browserInstance = await chromium.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-background-networking',
-          '--disable-default-apps',
-          '--disable-extensions',
-          '--disable-sync',
-          '--disable-translate',
-        ],
-      });
+      const launchArgs = [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--disable-extensions',
+        '--disable-sync',
+        '--disable-translate',
+      ];
+      try {
+        this.browserInstance = await chromium.launch({
+          headless: true,
+          args: launchArgs,
+        });
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        if (errorMsg.includes("Executable doesn't exist")) {
+          this.browserInstance = await chromium.launch({
+            headless: true,
+            executablePath: chromium.executablePath(),
+            args: launchArgs,
+          });
+        } else {
+          throw err;
+        }
+      }
     }
     return this.browserInstance;
   }

@@ -28,7 +28,7 @@ class MockMemoryStorageAdapter {
   }
 }
 
-describe('Day 4 Release Gate: Evidence Completeness & Manifest Integrity', () => {
+describe('Evidence Completeness & Manifest Integrity', () => {
   it('achieves >= 99% evidence completeness in a 100-step test fixture run', async () => {
     const storage = new MockMemoryStorageAdapter();
     const pipeline = new ArtifactCapturePipeline(storage);

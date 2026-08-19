@@ -60,7 +60,7 @@ class MockStorageDeletionAdapter {
   }
 }
 
-describe('Day 4: Retention & Deletion Consistency', () => {
+describe('Retention & Deletion Consistency', () => {
   it('purges run storage artifacts and logs deletion audit successfully', async () => {
     const db = new MockDatabaseDeletionAdapter();
     const storage = new MockStorageDeletionAdapter();

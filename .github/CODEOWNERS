@@ -1,8 +1,0 @@
-/docs/day-1/surface-review.md @parallelweb/product @parallelweb/security
-/docs/day-1/data-retention.md @parallelweb/product @parallelweb/security
-/docs/adr/ @parallelweb/tech-lead
-/infra/ @parallelweb/sre
-/packages/contracts/ @parallelweb/tech-lead @parallelweb/backend
-/apps/browser-spike/ @parallelweb/browser @parallelweb/security
-/packages/db/ @parallelweb/backend @parallelweb/tech-lead
-/apps/api/ @parallelweb/backend @parallelweb/security

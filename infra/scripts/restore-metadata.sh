@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Day 7 Infrastructure Restore Script
+# Infrastructure Restore Script
 # Restores PostgreSQL snapshot and validates artifact reference integrity.
 
 BACKUP_FILE="${1:-}"

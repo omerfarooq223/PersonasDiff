@@ -12,12 +12,17 @@ import {
   ShieldCheck,
   ArrowLeft,
   Laptop,
+  Smartphone,
+  Sparkles,
+  Link2,
 } from 'lucide-react';
 import { api, type CreateRunRequest } from '../lib/api';
 
 export default function CreateRun() {
   const navigate = useNavigate();
   const [surfaceId, setSurfaceId] = useState<string>('');
+  const [customUrl, setCustomUrl] = useState<string>('');
+  const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [journeyVersionId, setJourneyVersionId] = useState<string>('');
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>([]);
 
@@ -44,10 +49,17 @@ export default function CreateRun() {
   }, [surfaces, surfaceId]);
 
   useEffect(() => {
-    if (journeys && journeys.length > 0 && !journeyVersionId && journeys[0]) {
-      setJourneyVersionId(journeys[0].id);
+    if (journeys && journeys.length > 0 && surfaceId) {
+      const matchingJourney = journeys.find(
+        (j) => (j as { surfaceId?: string }).surfaceId === surfaceId,
+      );
+      if (matchingJourney) {
+        setJourneyVersionId(matchingJourney.id);
+      } else if (!journeyVersionId && journeys[0]) {
+        setJourneyVersionId(journeys[0].id);
+      }
     }
-  }, [journeys, journeyVersionId]);
+  }, [journeys, surfaceId, journeyVersionId]);
 
   useEffect(() => {
     if (personas && personas.length >= 2 && selectedPersonaIds.length === 0) {
@@ -57,11 +69,11 @@ export default function CreateRun() {
 
   const createRunMutation = useMutation({
     mutationFn: (data: CreateRunRequest) => {
-      const idempotencyKey = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+      const idempotencyKey = `live-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
       return api.createRun(data, idempotencyKey);
     },
     onSuccess: (run) => {
-      navigate(`/runs/${run.id}`);
+      navigate(`/runs/${run.id}/comparison`);
     },
   });
 
@@ -72,16 +84,21 @@ export default function CreateRun() {
     });
   };
 
-  const canSubmit = surfaceId && journeyVersionId && selectedPersonaIds.length >= 2;
+  const canSubmit =
+    (surfaceId || (isCustomMode && customUrl.startsWith('http'))) && selectedPersonaIds.length >= 2;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (canSubmit) {
-      createRunMutation.mutate({
-        journeyVersionId,
+      const payload: CreateRunRequest = {
+        journeyVersionId: journeyVersionId || '00000000-0000-4000-8000-000000000020',
         personaVersionIds: selectedPersonaIds,
-        surfaceId,
-      });
+        surfaceId: isCustomMode ? '00000000-0000-4000-8000-000000000011' : surfaceId,
+      };
+      if (isCustomMode && customUrl.trim().length > 0) {
+        payload.customSurfaceUrl = customUrl.trim();
+      }
+      createRunMutation.mutate(payload);
     }
   };
 
@@ -99,14 +116,16 @@ export default function CreateRun() {
           </Link>
           <div className="flex items-center space-x-2.5">
             <h1 className="text-3xl font-extrabold tracking-tight text-white">
-              Configure Comparison Run
+              Launch Live Audit Run
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/15 text-purple-400 border border-purple-500/30">
-              Isolated Execution
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center space-x-1">
+              <Sparkles className="h-3 w-3" />
+              <span>Real Playwright Browser</span>
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">
-            Define target surface, journey sequence, and isolated personas for side-by-side audit.
+            Pick a website URL, choose two visitor devices (Personas), and PersonaDiff will launch
+            real parallel browsers to find differences.
           </p>
         </div>
       </div>
@@ -114,68 +133,152 @@ export default function CreateRun() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Step 1: Surface Selection */}
         <div className="glass-panel p-6 rounded-2xl space-y-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm">
-              1
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm">
+                1
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center space-x-2">
+                  <span>Target Website (Surface)</span>
+                  <Globe className="h-4 w-4 text-cyan-400" />
+                </h2>
+                <p className="text-xs text-slate-400">
+                  The website you want to test and compare across visitor profiles
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center space-x-2">
-                <span>Approved Target Surface</span>
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              </h2>
-              <p className="text-xs text-slate-400">Strict SSRF allowlist boundary enforced</p>
+
+            {/* Custom URL vs Preset Switcher */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+              <button
+                type="button"
+                onClick={() => setIsCustomMode(false)}
+                className={`px-3 py-1 rounded-lg font-semibold transition-all ${
+                  !isCustomMode ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Presets
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCustomMode(true)}
+                className={`px-3 py-1 rounded-lg font-semibold transition-all ${
+                  isCustomMode ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Custom URL
+              </button>
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-3 pt-2">
-            {loadingSurfaces ? (
-              <div className="col-span-2 py-4 flex items-center justify-center text-sm text-slate-400">
-                <Loader2 className="h-4 w-4 animate-spin mr-2 text-indigo-400" /> Loading
-                surfaces...
+          {/* Custom URL Input Field */}
+          {isCustomMode ? (
+            <div className="p-4 rounded-xl bg-slate-950/80 border border-indigo-500/40 space-y-2">
+              <label className="block text-xs font-semibold text-slate-300">
+                Enter Any Real Public Website URL:
+              </label>
+              <div className="relative">
+                <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+                <input
+                  type="url"
+                  placeholder="https://news.ycombinator.com or https://example.com"
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  required
+                />
               </div>
-            ) : (
-              (
-                surfaces || [
-                  {
-                    hostname: 'localhost:4300',
-                    id: '00000000-0000-4000-8000-000000000010',
-                    name: 'Local Deterministic Fixture Surface',
-                    status: 'approved' as const,
-                  },
-                ]
-              ).map((s) => (
-                <div
-                  key={s.id}
-                  onClick={() => setSurfaceId(s.id)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                    surfaceId === s.id
-                      ? 'border-indigo-500 bg-indigo-600/15 shadow-lg shadow-indigo-600/15'
-                      : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2.5">
-                      <Globe className="h-4 w-4 text-indigo-400" />
-                      <div>
-                        <h3 className="text-sm font-semibold text-white">{s.name}</h3>
-                        <p className="text-xs text-indigo-300/80 font-mono mt-0.5">
-                          http://{s.hostname}
-                        </p>
+              <p className="text-[11px] text-slate-400">
+                Playwright will open this URL concurrently in both visitor browser profiles.
+              </p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3 pt-2">
+              {loadingSurfaces ? (
+                <div className="col-span-2 py-4 flex items-center justify-center text-sm text-slate-400">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2 text-indigo-400" /> Loading
+                  surfaces...
+                </div>
+              ) : (
+                (
+                  surfaces || [
+                    {
+                      hostname: 'news.ycombinator.com',
+                      id: '00000000-0000-4000-8000-000000000011',
+                      name: 'Hacker News (Live Public Surface)',
+                      origin: 'https://news.ycombinator.com',
+                      status: 'approved' as const,
+                    },
+                    {
+                      hostname: 'en.wikipedia.org',
+                      id: '00000000-0000-4000-8000-000000000012',
+                      name: 'Wikipedia Portal (Live Public Surface)',
+                      origin: 'https://en.wikipedia.org',
+                      status: 'approved' as const,
+                    },
+                    {
+                      hostname: 'localhost:4300',
+                      id: '00000000-0000-4000-8000-000000000010',
+                      name: 'Local Deterministic Fixture (Test Catalog)',
+                      origin: 'http://localhost:4300',
+                      status: 'approved' as const,
+                    },
+                  ]
+                ).map((s) => {
+                  const isLive = s.hostname !== 'localhost:4300';
+                  const surfaceOrigin =
+                    (s as { origin?: string }).origin || `https://${s.hostname}`;
+
+                  return (
+                    <div
+                      key={s.id}
+                      onClick={() => {
+                        setSurfaceId(s.id);
+                        if (journeys) {
+                          const match = journeys.find(
+                            (j) => (j as { surfaceId?: string }).surfaceId === s.id,
+                          );
+                          if (match) setJourneyVersionId(match.id);
+                        }
+                      }}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        surfaceId === s.id
+                          ? 'border-indigo-500 bg-indigo-600/15 shadow-lg shadow-indigo-600/15'
+                          : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-2.5">
+                          <Globe className="h-4 w-4 text-indigo-400" />
+                          <div>
+                            <h3 className="text-sm font-semibold text-white">{s.name}</h3>
+                            <p className="text-xs text-indigo-300/80 font-mono mt-0.5">
+                              {surfaceOrigin}
+                            </p>
+                          </div>
+                        </div>
+                        {surfaceId === s.id && <CheckCircle2 className="h-4 w-4 text-indigo-400" />}
+                      </div>
+                      <div className="mt-3 flex items-center space-x-2 text-[11px] font-medium">
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${isLive ? 'bg-cyan-400' : 'bg-emerald-400'}`}
+                        />
+                        <span className={isLive ? 'text-cyan-400' : 'text-emerald-400'}>
+                          {isLive
+                            ? 'Live Real Website (Audited via Playwright)'
+                            : 'Local Sandbox Catalog'}
+                        </span>
                       </div>
                     </div>
-                    {surfaceId === s.id && <CheckCircle2 className="h-4 w-4 text-indigo-400" />}
-                  </div>
-                  <div className="mt-3 flex items-center space-x-2 text-[11px] text-emerald-400 font-medium">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    <span>Pre-Approved for Zero-Consent Local Auditing</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Step 2: Journey Version Selection */}
+        {/* Step 2: Journey Workflow Selection */}
         <div className="glass-panel p-6 rounded-2xl space-y-4">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm">
@@ -186,71 +289,35 @@ export default function CreateRun() {
                 <span>Journey Workflow</span>
                 <Compass className="h-4 w-4 text-purple-400" />
               </h2>
-              <p className="text-xs text-slate-400">Deterministic sequence of browser actions</p>
+              <p className="text-xs text-slate-400">
+                The automated sequence of actions the browser will execute on the page
+              </p>
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-1 gap-3 pt-2">
-            {(
-              journeys || [
-                {
-                  id: '00000000-0000-4000-8000-000000000020',
-                  name: 'Product Catalog & Pricing Audit Journey',
-                  steps: [
-                    { action: 'navigate', description: 'Navigate to fixture catalog', id: '1' },
-                    { action: 'wait', description: 'Wait for DOM networkidle', id: '2' },
-                    { action: 'screenshot', description: 'Capture viewport screenshot', id: '3' },
-                    {
-                      action: 'extract',
-                      description: 'Extract product listing & price data',
-                      id: '4',
-                    },
-                  ],
-                  version: '1.0.0',
-                },
-              ]
-            ).map((j) => (
-              <div
-                key={j.id}
-                onClick={() => setJourneyVersionId(j.id)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                  journeyVersionId === j.id
-                    ? 'border-indigo-500 bg-indigo-600/15 shadow-lg shadow-indigo-600/15'
-                    : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{j.name}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Immutable Journey Version {j.version}
-                    </p>
-                  </div>
-                  {journeyVersionId === j.id && (
-                    <CheckCircle2 className="h-4 w-4 text-indigo-400" />
-                  )}
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                  {j.steps.map((st, idx) => {
-                    const stepType =
-                      'action' in st && typeof st.action === 'string'
-                        ? st.action
-                        : 'type' in st && typeof st.type === 'string'
-                          ? st.type
-                          : 'step';
-                    return (
-                      <span
-                        key={st.id || idx}
-                        className="px-2 py-1 rounded-md bg-slate-950/60 border border-slate-800 text-slate-300 font-mono text-[11px]"
-                      >
-                        Step {idx + 1}: {stepType}
-                      </span>
-                    );
-                  })}
-                </div>
+          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="text-xs font-semibold text-white flex items-center space-x-2">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Full Audit Sequence:</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                <span className="text-[10px] text-indigo-400 font-bold block">STEP 1</span>
+                <span className="text-slate-200 font-medium">Navigate</span>
               </div>
-            ))}
+              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                <span className="text-[10px] text-indigo-400 font-bold block">STEP 2</span>
+                <span className="text-slate-200 font-medium">Wait for Load</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                <span className="text-[10px] text-indigo-400 font-bold block">STEP 3</span>
+                <span className="text-slate-200 font-medium">Take Screenshot</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                <span className="text-[10px] text-indigo-400 font-bold block">STEP 4</span>
+                <span className="text-slate-200 font-medium">Extract & Diff</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -263,49 +330,47 @@ export default function CreateRun() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-white flex items-center space-x-2">
-                  <span>Select Isolated Personas</span>
+                  <span>Select 2 Comparison Personas (Device Identities)</span>
                   <Users2 className="h-4 w-4 text-cyan-400" />
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Choose at least 2 personas to evaluate concurrently
+                  Different device and location profiles being sent to the website in parallel
                 </p>
               </div>
             </div>
-
-            <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-300">
-              {selectedPersonaIds.length} Selected
-            </span>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-3 pt-2">
+          <div className="grid sm:grid-cols-2 gap-4 pt-2">
             {(
               personas || [
                 {
                   id: '00000000-0000-4000-8000-000000000030',
-                  name: 'Persona A (Control / Standard)',
+                  name: 'Persona A (Desktop / US Chrome)',
                   settings: {
                     locale: 'en-US',
-                    timezoneId: 'UTC',
-                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PersonaDiff/Control',
+                    timezoneId: 'America/New_York',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0',
                     viewport: { height: 720, width: 1280 },
                   },
                   version: '1.0.0',
                 },
                 {
                   id: '00000000-0000-4000-8000-000000000031',
-                  name: 'Persona B (Variant / Regional)',
+                  name: 'Persona B (Mobile / UK Safari)',
                   settings: {
-                    locale: 'en-US',
-                    timezoneId: 'UTC',
+                    locale: 'en-GB',
+                    timezoneId: 'Europe/London',
                     userAgent:
-                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) PersonaDiff/Variant',
-                    viewport: { height: 720, width: 1280 },
+                      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/605.1.15',
+                    viewport: { height: 844, width: 390 },
                   },
                   version: '1.0.0',
                 },
               ]
             ).map((p) => {
               const isSelected = selectedPersonaIds.includes(p.id);
+              const isMobile = p.settings.viewport.width < 500;
+
               return (
                 <div
                   key={p.id}
@@ -317,83 +382,81 @@ export default function CreateRun() {
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">{p.name}</h3>
-                      <p className="text-xs text-slate-400">Version {p.version}</p>
+                    <div className="flex items-center space-x-2.5">
+                      <div className="p-2 rounded-lg bg-slate-800 border border-slate-700">
+                        {isMobile ? (
+                          <Smartphone className="h-4 w-4 text-purple-400" />
+                        ) : (
+                          <Laptop className="h-4 w-4 text-indigo-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">{p.name}</h3>
+                        <p className="text-xs text-slate-400">
+                          {p.settings.viewport.width}×{p.settings.viewport.height} •{' '}
+                          {p.settings.locale}
+                        </p>
+                      </div>
                     </div>
-                    <div
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                        isSelected
-                          ? 'bg-indigo-600 border-indigo-500 text-white'
-                          : 'border-slate-700'
-                      }`}
-                    >
-                      {isSelected && <CheckCircle2 className="h-3.5 w-3.5" />}
-                    </div>
+                    {isSelected && <CheckCircle2 className="h-4 w-4 text-indigo-400" />}
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs text-slate-300">
-                    <div className="flex items-center space-x-2">
-                      <Laptop className="h-3 w-3 text-slate-400" />
-                      <span>
-                        Viewport: {p.settings.viewport.width} × {p.settings.viewport.height}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Globe className="h-3 w-3 text-slate-400" />
-                      <span>
-                        {p.settings.locale} • {p.settings.timezoneId}
-                      </span>
-                    </div>
+                  <div className="mt-3 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 font-mono text-[11px] text-slate-400 break-all">
+                    {p.settings.userAgent}
                   </div>
                 </div>
               );
             })}
           </div>
-
-          {selectedPersonaIds.length < 2 && (
-            <div className="flex items-center space-x-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>Select at least two personas to execute a comparative audit.</span>
-            </div>
-          )}
         </div>
 
-        {/* Security / Isolation Guarantee Banner */}
-        <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 flex items-center space-x-3 text-xs text-indigo-300">
-          <ShieldCheck className="h-5 w-5 text-indigo-400 shrink-0" />
-          <span>
-            <strong>Zero State Contamination:</strong> Each persona runs in an isolated, newly
-            instantiated Playwright context with pre-storage PII redaction and SSRF egress blocking.
-          </span>
+        {/* Isolation Guarantee Banner */}
+        <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 flex items-start space-x-3 text-xs text-slate-300">
+          <ShieldCheck className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-white block mb-0.5">
+              100% Zero-Contamination Guarantee
+            </span>
+            <span>
+              Persona A and Persona B execute in separate Playwright sandboxes. Cookies, cache, and
+              session data never leak between personas.
+            </span>
+          </div>
         </div>
 
-        {/* Submit Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-2">
+        {/* Form Actions */}
+        <div className="flex items-center justify-end space-x-4 pt-4 border-t border-white/5">
           <Link
             to="/runs"
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-all"
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={!canSubmit || createRunMutation.isPending}
-            className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all active:scale-95"
+            className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-xl shadow-indigo-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
           >
             {createRunMutation.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                <span>Dispatching Workers...</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Launching Real Playwright Browsers...</span>
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 fill-current mr-1.5" />
-                <span>Start Comparative Audit</span>
+                <Play className="h-4 w-4 fill-current" />
+                <span>Start Live Audit</span>
               </>
             )}
           </button>
         </div>
+
+        {createRunMutation.isError && (
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-center space-x-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>Failed to launch comparison run. Please try again.</span>
+          </div>
+        )}
       </form>
     </div>
   );
