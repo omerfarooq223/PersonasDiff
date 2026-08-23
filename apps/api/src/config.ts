@@ -72,6 +72,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       region: env.S3_REGION ?? 'us-east-1',
       secretAccessKey: env.S3_SECRET_KEY ?? null,
     },
-    seedOnStartup: env.SEED_ON_STARTUP !== 'false',
+    seedOnStartup: env.SEED_ON_STARTUP === 'true',
   };
 }

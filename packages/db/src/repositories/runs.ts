@@ -1,6 +1,6 @@
 import type pg from 'pg';
 
-import type { RunStatus } from '@ai-parallel-web/domain';
+import { assertTransition, type RunStatus } from '@ai-parallel-web/domain';
 import type { CreateRunInput, RunRow } from '../types.js';
 
 export interface RunResponse {
@@ -175,6 +175,7 @@ export async function transitionRunStatus(
   if (!current) {
     return null;
   }
+  assertTransition(current.status, nextStatus);
 
   const result = await pool.query<RunRow>(
     `UPDATE runs
@@ -194,6 +195,8 @@ export async function transitionRunStatus(
   if (!updatedRun) {
     return null;
   }
+
+  await pool.query('UPDATE run_personas SET status = $1 WHERE run_id = $2', [nextStatus, runId]);
 
   return toRunResponse(updatedRun, current.personaVersionIds);
 }

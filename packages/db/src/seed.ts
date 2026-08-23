@@ -11,16 +11,22 @@ const fixtureJourneySteps = [
 ];
 
 const personaSettings = {
-  control: {
+  us: {
     locale: 'en-US',
-    persona: 'control',
-    timezoneId: 'UTC',
+    persona: 'United States (USD)',
+    timezoneId: 'America/New_York',
     viewport: { height: 720, width: 1280 },
   },
-  variant: {
-    locale: 'en-US',
-    persona: 'variant',
-    timezoneId: 'UTC',
+  brazil: {
+    locale: 'pt-BR',
+    persona: 'Brazil (BRL)',
+    timezoneId: 'America/Sao_Paulo',
+    viewport: { height: 720, width: 1280 },
+  },
+  germany: {
+    locale: 'de-DE',
+    persona: 'Germany (EUR)',
+    timezoneId: 'Europe/Berlin',
     viewport: { height: 720, width: 1280 },
   },
 };
@@ -98,16 +104,16 @@ export async function seedDevelopmentData(pool: pg.Pool): Promise<void> {
 
   const personas = [
     {
-      hash: 'persona-control-v1',
+      hash: 'persona-us-v1',
       id: seedIds.personaControl,
-      name: 'control',
-      settings: personaSettings.control,
+      name: 'United States (USD)',
+      settings: personaSettings.us,
     },
     {
-      hash: 'persona-variant-v1',
+      hash: 'persona-brazil-v1',
       id: seedIds.personaVariant,
-      name: 'variant',
-      settings: personaSettings.variant,
+      name: 'Brazil (BRL)',
+      settings: personaSettings.brazil,
     },
   ] as const;
 

@@ -54,7 +54,7 @@ export async function createDependencies(config: ApiConfig): Promise<AppDependen
   if (config.databaseUrl) {
     db = createPool(config.databaseUrl);
     await runMigrations(db, defaultMigrationsDirectory());
-    if (config.seedOnStartup && config.appEnv === 'development') {
+    if (config.seedOnStartup) {
       await seedDevelopmentData(db);
     }
   }

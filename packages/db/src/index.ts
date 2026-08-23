@@ -15,9 +15,15 @@ export {
   type RunResponse,
 } from './repositories/runs.js';
 export {
+  createPersonaVersion,
+  deletePersonaVersion,
+  ensureLiveAuditConfiguration,
   findJourneyVersionById,
   findPersonaVersionsByIds,
   findSurfaceById,
+  listJourneyVersions,
+  listPersonaVersions,
+  listSurfaces,
 } from './repositories/surfaces.js';
 export { findUserById, findUserByToken } from './repositories/users.js';
 export {
