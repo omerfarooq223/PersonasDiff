@@ -5,6 +5,11 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
+// Initialize default development auth token if not already set
+if (typeof window !== 'undefined' && !localStorage.getItem('auth_token')) {
+  localStorage.setItem('auth_token', 'pw-admin-token-dev-only-0001');
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

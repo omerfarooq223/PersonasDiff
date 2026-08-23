@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Loader2,
@@ -11,15 +11,11 @@ import {
   Activity,
   Search,
   ArrowRight,
-  TrendingUp,
-  ShieldCheck,
   Split,
   Eye,
   FileCheck2,
   Sparkles,
   Layers,
-  Terminal,
-  X,
 } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -69,13 +65,8 @@ const statusConfig = {
 };
 
 export default function RunList() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [showSimulator, setShowSimulator] = useState(false);
-  const [simStep, setSimStep] = useState(0);
-  const [simLogs, setSimLogs] = useState<string[]>([]);
-  const [simRunning, setSimRunning] = useState(false);
 
   const { data: runsData, isLoading } = useQuery({
     queryKey: ['runs'],
@@ -94,51 +85,8 @@ export default function RunList() {
   });
 
   const completedCount = runs.filter((r) => r.status === 'completed').length;
-
-  const startSimulation = () => {
-    setShowSimulator(true);
-    setSimRunning(true);
-    setSimStep(1);
-    setSimLogs([
-      `[1/4] 🚀 Launching two separate Google Chrome browsers in parallel...`,
-      `[1/4] 👤 Setting up Persona A (Desktop / US Chrome) in a sandboxed session...`,
-      `[1/4] 📱 Setting up Persona B (Mobile / UK Safari) in a sandboxed session...`,
-    ]);
-
-    setTimeout(() => {
-      setSimStep(2);
-      setSimLogs((prev) => [
-        ...prev,
-        `[2/4] 🌐 Persona A visiting target website (1280x720 desktop resolution)...`,
-        `[2/4] 🌐 Persona B visiting target website at the exact same millisecond (390x844 mobile resolution)...`,
-        `[2/4] 🛡️ Verifying zero session leaks between the two browsers...`,
-      ]);
-    }, 1200);
-
-    setTimeout(() => {
-      setSimStep(3);
-      setSimLogs((prev) => [
-        ...prev,
-        `[3/4] 📸 Capturing high-resolution viewport screenshots for both visitor devices...`,
-        `[3/4] 📄 Extracting webpage text, product names, headlines, and prices...`,
-        `[3/4] 🔒 Privacy check: Redacted all personal tokens and emails from data before saving.`,
-      ]);
-    }, 2400);
-
-    setTimeout(() => {
-      setSimStep(4);
-      setSimLogs((prev) => [
-        ...prev,
-        `[4/4] 📊 Comparing differences between Persona A and Persona B:`,
-        `      • DOM Layout Overlap: 74.2%`,
-        `      • Text Content Match: 81.5%`,
-        `      • Pricing Shift Detected: +$8.00 on featured item`,
-        `      • Product Ranking: Variant persona received a substituted product at Rank #1`,
-        `[4/4] ✅ Audit complete! Generated verified evidence report.`,
-      ]);
-      setSimRunning(false);
-    }, 3600);
-  };
+  const activeCount = runs.filter((r) => r.status === 'running' || r.status === 'queued').length;
+  const failedCount = runs.filter((r) => r.status === 'failed').length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -158,15 +106,6 @@ export default function RunList() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={startSimulation}
-            className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-indigo-300 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 shadow-lg transition-all active:scale-95"
-          >
-            <Terminal className="h-4 w-4 text-indigo-400" />
-            <span>Simulate Live Audit</span>
-          </button>
-
           <Link
             to="/runs/new"
             className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all active:scale-95"
@@ -176,99 +115,6 @@ export default function RunList() {
           </Link>
         </div>
       </div>
-
-      {/* Live Simulation Modal */}
-      {showSimulator && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-4 p-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-2">
-                <Terminal className="h-5 w-5 text-indigo-400" />
-                <h3 className="text-base font-bold text-white">
-                  Live PersonaDiff Execution Simulator
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSimulator(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Stepper Progress */}
-            <div className="grid grid-cols-4 gap-2 text-xs">
-              {[
-                { label: 'Contexts', step: 1 },
-                { label: 'Navigation', step: 2 },
-                { label: 'Capture & PII', step: 3 },
-                { label: 'Metric Diff', step: 4 },
-              ].map((s) => (
-                <div
-                  key={s.step}
-                  className={`p-2 rounded-lg border text-center transition-all ${
-                    simStep >= s.step
-                      ? 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300 font-semibold'
-                      : 'bg-slate-950 border-slate-800 text-slate-500'
-                  }`}
-                >
-                  <span>
-                    Step {s.step}: {s.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Simulated Terminal Log Stream */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-1.5 max-h-56 overflow-y-auto">
-              {simLogs.map((log, i) => (
-                <div key={i} className="leading-relaxed">
-                  {log.includes('[SECURITY]') ? (
-                    <span className="text-emerald-400">{log}</span>
-                  ) : log.includes('[COMPARE]') ? (
-                    <span className="text-purple-300">{log}</span>
-                  ) : log.includes('[SUCCESS]') ? (
-                    <span className="text-emerald-300 font-bold">{log}</span>
-                  ) : (
-                    <span>{log}</span>
-                  )}
-                </div>
-              ))}
-              {simRunning && (
-                <div className="flex items-center space-x-2 text-indigo-400 pt-1">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Processing isolated browser journey...</span>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowSimulator(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700"
-              >
-                Close
-              </button>
-              {!simRunning && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSimulator(false);
-                    navigate('/runs/00000000-0000-4000-8000-000000000999/comparison');
-                  }}
-                  className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 flex items-center space-x-1.5"
-                >
-                  <Split className="h-3.5 w-3.5" />
-                  <span>Open Comparison Diffs</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Telemetry & Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -283,10 +129,8 @@ export default function RunList() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white tracking-tight">{runs.length || 2}</span>
-            <span className="text-xs text-emerald-400 font-medium flex items-center">
-              <TrendingUp className="h-3 w-3 mr-0.5" /> 100% Proven
-            </span>
+            <span className="text-3xl font-bold text-white tracking-tight">{runs.length}</span>
+            <span className="text-xs text-slate-400 font-medium">From backend</span>
           </div>
           <p className="text-xs text-slate-500 mt-1">Total audit sessions launched</p>
         </div>
@@ -302,50 +146,46 @@ export default function RunList() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white tracking-tight">
-              {completedCount || 2}
+            <span className="text-3xl font-bold text-white tracking-tight">{completedCount}</span>
+            <span className="text-xs text-slate-400 font-medium">
+              {completedCount > 0 ? 'Ready for Replay' : 'None yet'}
             </span>
-            <span className="text-xs text-slate-400 font-medium">Ready for Replay</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Runs with 100% verified evidence ready</p>
+          <p className="text-xs text-slate-500 mt-1">Runs reported as completed</p>
         </div>
 
         <div className="glass-card p-5 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-purple-500 to-pink-500" />
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Observed Divergence
+              Active Runs
             </span>
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-              <Split className="h-4 w-4" />
+              <Loader2 className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white tracking-tight">+$8.00 / Rank 1</span>
-            <span className="text-xs text-purple-400 font-medium">Delta</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{activeCount}</span>
+            <span className="text-xs text-purple-400 font-medium">Queued or running</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Differential shifts detected between personas
-          </p>
+          <p className="text-xs text-slate-500 mt-1">Runs currently in progress</p>
         </div>
 
         <div className="glass-card p-5 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-cyan-500 to-blue-500" />
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Isolation Boundary
+              Failed Runs
             </span>
             <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <ShieldCheck className="h-4 w-4" />
+              <XCircle className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white tracking-tight">0% Leakage</span>
-            <span className="text-xs text-emerald-400 font-medium">Verified</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{failedCount}</span>
+            <span className="text-xs text-slate-400 font-medium">From backend</span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Zero session leaks between parallel browsers
-          </p>
+          <p className="text-xs text-slate-500 mt-1">Runs reported as failed</p>
         </div>
       </div>
 
@@ -358,23 +198,23 @@ export default function RunList() {
             placeholder="Search runs by ID or Surface..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/60 transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-slate-950/60 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          {['all', 'completed', 'running', 'failed'].map((status) => (
+        <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          {['all', 'completed', 'running', 'failed'].map((st) => (
             <button
-              key={status}
+              key={st}
               type="button"
-              onClick={() => setStatusFilter(status)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all whitespace-nowrap ${
-                statusFilter === status
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              onClick={() => setStatusFilter(st)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${
+                statusFilter === st
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-850'
               }`}
             >
-              {status}
+              {st}
             </button>
           ))}
         </div>
@@ -412,8 +252,7 @@ export default function RunList() {
       ) : (
         <div className="grid gap-4">
           {filteredRuns.map((run) => {
-            const cfg =
-              statusConfig[run.status as keyof typeof statusConfig] || statusConfig.completed;
+            const cfg = statusConfig[run.status as keyof typeof statusConfig] || statusConfig.draft;
             const StatusIcon = cfg.icon;
 
             return (
@@ -423,25 +262,25 @@ export default function RunList() {
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   {/* Left Info */}
-                  <div className="flex items-start space-x-4">
-                    <div className={`p-3 rounded-xl border mt-0.5 ${cfg.color}`}>
+                  <div className="flex items-start space-x-4 min-w-0 flex-1">
+                    <div className={`p-3 rounded-xl border mt-0.5 flex-shrink-0 ${cfg.color}`}>
                       <StatusIcon
                         className={`h-5 w-5 ${run.status === 'running' ? 'animate-spin' : ''}`}
                       />
                     </div>
 
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-3">
                         <Link
                           to={`/runs/${run.id}`}
-                          className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors flex items-center space-x-2"
+                          className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors flex items-center space-x-2 truncate"
                         >
                           <span>Run {run.id.slice(0, 8)}</span>
                           <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-400" />
                         </Link>
 
                         <span
-                          className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.color}`}
+                          className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border flex-shrink-0 ${cfg.color}`}
                         >
                           <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
                           <span>{cfg.label}</span>
@@ -457,19 +296,18 @@ export default function RunList() {
 
                       {/* Badges / Persona preview */}
                       <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
-                        <span className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 flex items-center space-x-1.5">
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 flex items-center space-x-1.5 flex-shrink-0">
                           <Split className="h-3 w-3 text-purple-400" />
-                          <span>2 Personas (Control vs Variant)</span>
+                          <span>{run.personaVersionIds?.length ?? 0} Personas</span>
                         </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 max-w-full sm:max-w-md truncate">
                           Target:{' '}
-                          <span className="text-indigo-300 font-mono">http://localhost:4300</span>
+                          <span className="text-indigo-300 font-mono truncate">
+                            {run.targetUrl ?? 'Not recorded'}
+                          </span>
                         </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">
-                          DOM Overlap: 74.2%
-                        </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-medium">
-                          Price Delta: +$8.00 (+80%)
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium flex-shrink-0">
+                          Status: {cfg.label}
                         </span>
                       </div>
                     </div>

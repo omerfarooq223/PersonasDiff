@@ -5,6 +5,7 @@ import CreateRun from './pages/CreateRun';
 import RunDetail from './pages/RunDetail';
 import Comparison from './pages/Comparison';
 import Replay from './pages/Replay';
+import ScheduledJobs from './pages/ScheduledJobs';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/runs/:id" element={<RunDetail />} />
         <Route path="/runs/:id/comparison" element={<Comparison />} />
         <Route path="/runs/:id/replay" element={<Replay />} />
+        <Route path="/scheduled-jobs" element={<ScheduledJobs />} />
       </Routes>
     </Layout>
   );

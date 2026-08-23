@@ -1,18 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  Loader2,
-  CheckCircle2,
-  Split,
-  Eye,
-  ArrowLeft,
-  ShieldCheck,
-  Copy,
-  Check,
-  Sparkles,
-  Download,
-} from 'lucide-react';
+import { Split, Eye, ArrowLeft, ShieldCheck, Copy, Check, Sparkles, Download } from 'lucide-react';
 import { api } from '../lib/api';
 
 export default function RunDetail() {
@@ -20,10 +9,20 @@ export default function RunDetail() {
   const [exportingFormat, setExportingFormat] = useState<'json' | 'csv' | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: run, isLoading } = useQuery({
+  const {
+    data: run,
+    isError: runError,
+    isLoading,
+  } = useQuery({
     queryKey: ['run', id],
     queryFn: () => api.getRun(id!),
     enabled: !!id,
+  });
+
+  const { data: comparison } = useQuery({
+    queryKey: ['comparison', id],
+    queryFn: () => api.getComparison(id!),
+    enabled: !!id && Boolean(run),
   });
 
   const copyRunId = () => {
@@ -63,13 +62,19 @@ export default function RunDetail() {
     );
   }
 
-  const runData = run || {
-    createdAt: new Date().toISOString(),
-    id: id || 'run-demo-001',
-    personaVersionIds: ['persona-a', 'persona-b'],
-    status: 'completed',
-    surfaceId: '00000000-0000-4000-8000-000000000010',
-  };
+  if (runError || !run) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-3 text-center">
+        <h2 className="text-lg font-bold text-white">Run unavailable</h2>
+        <p className="text-sm text-slate-400">The backend did not return a run for this ID.</p>
+        <Link to="/runs" className="text-sm font-semibold text-indigo-400 hover:text-indigo-300">
+          Back to runs
+        </Link>
+      </div>
+    );
+  }
+
+  const runData = run;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -118,110 +123,90 @@ export default function RunDetail() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             to={`/runs/${runData.id}/comparison`}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 transition-colors"
           >
-            <Split className="h-3.5 w-3.5" />
-            <span>View Comparison</span>
+            <Eye className="h-4 w-4" />
+            <span>View Live Comparison</span>
           </Link>
 
           <Link
             to={`/runs/${runData.id}/replay`}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/60 transition-all active:scale-95"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors"
           >
-            <Eye className="h-3.5 w-3.5" />
-            <span>Targetless Replay</span>
+            <Split className="h-4 w-4 text-purple-400" />
+            <span>Step Replay</span>
           </Link>
 
           <button
             type="button"
             onClick={() => handleExport('json')}
             disabled={exportingFormat !== null}
-            className="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-all"
+            className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 disabled:opacity-50 transition-colors"
           >
-            {exportingFormat === 'json' ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5" />
-            )}
-            <span>Export JSON</span>
+            <Download className="h-3.5 w-3.5" />
+            <span>JSON</span>
           </button>
-        </div>
-      </div>
-
-      {/* Execution Pipeline Stepper */}
-      <div className="glass-panel p-6 rounded-2xl space-y-4">
-        <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
-          Execution Pipeline Lifecycle
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {[
-            { label: 'Context Isolation', status: 'Completed', sub: 'Zero Leaks' },
-            { label: 'Journey Executed', status: 'Completed', sub: '4/4 Steps' },
-            { label: 'PII Redaction', status: 'Completed', sub: 'Audited' },
-            { label: 'Evidence Hashing', status: 'Completed', sub: 'SHA-256' },
-            { label: 'Metric Analysis', status: 'Completed', sub: 'HIGH Conf' },
-          ].map((stage) => (
-            <div
-              key={stage.label}
-              className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80"
-            >
-              <div className="flex items-center space-x-1.5 text-xs text-emerald-400 font-semibold">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>{stage.status}</span>
-              </div>
-              <p className="text-xs font-medium text-white mt-1.5">{stage.label}</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">{stage.sub}</p>
-            </div>
-          ))}
         </div>
       </div>
 
       {/* Overview Cards Grid */}
       <div className="grid md:grid-cols-3 gap-4">
-        <div className="glass-card p-5 rounded-2xl space-y-3">
+        <div className="glass-card p-5 rounded-2xl space-y-3 overflow-hidden">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Target Surface
           </span>
-          <div>
-            <h3 className="text-sm font-bold text-white">Local Deterministic Fixture Surface</h3>
-            <p className="text-xs text-indigo-400 font-mono mt-0.5">
-              http://localhost:4300/fixture
+          <div className="overflow-hidden">
+            <h3 className="text-sm font-bold text-white truncate">
+              {comparison?.domSummary?.personaATitle ?? 'Title not recorded'}
+            </h3>
+            <p className="text-xs text-indigo-400 font-mono mt-0.5 truncate break-all">
+              {runData.targetUrl ?? 'URL not recorded'}
             </p>
           </div>
-          <div className="pt-2 border-t border-white/5 text-[11px] text-emerald-400 flex items-center space-x-1.5">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            <span>Pre-Approved Surface • 12 req/min Cap</span>
+          <div className="pt-2 border-t border-white/5 text-[11px] text-emerald-400 flex items-center space-x-1.5 truncate">
+            <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate">Audited Live via Playwright Chromium</span>
           </div>
         </div>
 
         <div className="glass-card p-5 rounded-2xl space-y-3">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Audited Personas
+            Audited Personas (
+            {comparison?.comparedPersonas?.length ?? runData.personaVersionIds?.length ?? 0})
           </span>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-white font-medium">Persona A (Control)</span>
-              <span className="text-slate-400 font-mono text-[11px]">1280x720 • en-US</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-white font-medium">Persona B (Variant)</span>
-              <span className="text-slate-400 font-mono text-[11px]">1280x720 • en-US</span>
-            </div>
+            {(comparison?.personaResults || []).map((p, idx) => (
+              <div key={idx} className="flex items-center justify-between text-xs">
+                <span className="text-white font-medium truncate max-w-[170px]">{p.name}</span>
+                <span className="text-slate-400 font-mono text-[11px]">
+                  {p.viewport.width}x{p.viewport.height} • {p.locale}
+                </span>
+              </div>
+            ))}
           </div>
           <div className="pt-2 border-t border-white/5 text-[11px] text-purple-400 flex items-center space-x-1.5">
             <Split className="h-3.5 w-3.5" />
-            <span>Isolated Contexts • Distinct User-Agents</span>
+            <span>Isolated Contexts • Distinct Fingerprints</span>
           </div>
         </div>
 
         <div className="glass-card p-5 rounded-2xl space-y-3">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Observed Divergence
+            Live Comparison Summary
           </span>
-          <div className="space-y-1 text-xs">
-            <div className="text-amber-300 font-semibold">Price Delta: +$8.00 (+80%)</div>
-            <div className="text-indigo-300 font-semibold">Rank 1 Item: Alpha vs Beta</div>
-            <div className="text-slate-400">DOM Jaccard Overlap: 74.2%</div>
+          <div className="space-y-1.5 text-xs">
+            {comparison?.metrics?.slice(0, 3).map((m, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <span className="text-slate-300 font-medium truncate max-w-[150px]">
+                  {m.metricName}
+                </span>
+                <span className="text-emerald-400 font-mono font-semibold">
+                  {typeof m.result === 'number'
+                    ? `${(m.result * 100).toFixed(1)}%`
+                    : String(m.result)}
+                </span>
+              </div>
+            )) || <p className="text-slate-400">Computing live metrics across personas...</p>}
           </div>
           <div className="pt-2 border-t border-white/5 text-[11px] text-slate-400 flex items-center space-x-1.5">
             <Sparkles className="h-3.5 w-3.5 text-indigo-400" />

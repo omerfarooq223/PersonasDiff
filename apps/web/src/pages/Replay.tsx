@@ -13,72 +13,26 @@ import {
   Laptop,
   Smartphone,
 } from 'lucide-react';
-import { api, StepEvidence } from '../lib/api';
-
-const fallbackSteps: StepEvidence[] = [
-  {
-    artifacts: [
-      {
-        artifactType: 'screenshot',
-        sha256: 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890',
-        state: 'PRESENT',
-        storageKey: 'runs/demo/control/screenshot.png',
-      },
-      {
-        artifactType: 'dom_snapshot',
-        sha256: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-        state: 'PRESENT',
-        storageKey: 'runs/demo/control/dom.html',
-      },
-    ],
-    finalUrl: 'https://news.ycombinator.com',
-    httpOutcome: { ok: true, redirectChain: [], statusCode: 200 },
-    overallEvidenceState: 'PRESENT',
-    personaId: 'Persona A (Desktop / US Chrome)',
-    runId: 'demo-run',
-    stepId: 'step-1',
-    stepIndex: 0,
-    timestampUtc: new Date().toISOString(),
-  },
-  {
-    artifacts: [
-      {
-        artifactType: 'screenshot',
-        sha256: '11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff',
-        state: 'PRESENT',
-        storageKey: 'runs/demo/variant/screenshot.png',
-      },
-      {
-        artifactType: 'dom_snapshot',
-        sha256: 'ffeeddccbbaa00998877665544332211ffeeddccbbaa00998877665544332211',
-        state: 'PRESENT',
-        storageKey: 'runs/demo/variant/dom.html',
-      },
-    ],
-    finalUrl: 'https://news.ycombinator.com',
-    httpOutcome: { ok: true, redirectChain: [], statusCode: 200 },
-    overallEvidenceState: 'PRESENT',
-    personaId: 'Persona B (Mobile / UK Safari)',
-    runId: 'demo-run',
-    stepId: 'step-2',
-    stepIndex: 1,
-    timestampUtc: new Date().toISOString(),
-  },
-];
+import { api, type StepEvidence } from '../lib/api';
 
 export default function Replay() {
   const { id } = useParams<{ id: string }>();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const { data: replayData, isLoading } = useQuery({
+  const {
+    data: replayData,
+    isError,
+    isLoading,
+  } = useQuery({
     queryKey: ['replay', id],
     queryFn: () => api.getReplay(id!),
     enabled: !!id,
+    staleTime: 0,
   });
 
-  const steps = replayData?.steps && replayData.steps.length > 0 ? replayData.steps : fallbackSteps;
-  const currentStep: StepEvidence = steps[currentStepIndex] ?? steps[0] ?? fallbackSteps[0]!;
+  const steps = replayData?.steps ?? [];
+  const currentStep: StepEvidence | undefined = steps[currentStepIndex] ?? steps[0];
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -103,6 +57,21 @@ export default function Replay() {
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
         <div className="w-10 h-10 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
         <p className="text-sm text-slate-400 font-medium">Loading targetless replay evidence...</p>
+      </div>
+    );
+  }
+
+  if (isError || !currentStep) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-3 text-center">
+        <h2 className="text-lg font-bold text-white">Replay evidence unavailable</h2>
+        <p className="text-sm text-slate-400">No recorded evidence was returned by the backend.</p>
+        <Link
+          to={`/runs/${id}/comparison`}
+          className="text-sm font-semibold text-indigo-400 hover:text-indigo-300"
+        >
+          Back to comparison
+        </Link>
       </div>
     );
   }
@@ -250,13 +219,29 @@ export default function Replay() {
           {/* Render Actual Captured Screenshot if Present */}
           <div className="p-6 bg-slate-950 flex flex-col items-center justify-center min-h-[380px]">
             {currentStep.screenshotUrl ? (
-              <div className={`w-full ${isMobile ? 'max-w-xs' : 'max-w-4xl'} mx-auto space-y-3`}>
-                <img
-                  src={currentStep.screenshotUrl}
-                  alt={`${currentStep.personaId} Live Captured Evidence`}
-                  className="w-full h-auto rounded-xl border border-slate-800 shadow-2xl"
-                />
-              </div>
+              isMobile ? (
+                <div className="max-w-[270px] w-full bg-slate-900 border-4 border-slate-700/80 rounded-[32px] p-2 shadow-2xl mx-auto my-2">
+                  <div className="w-16 h-3 bg-slate-800 rounded-full mx-auto mb-1.5 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-slate-900" />
+                  </div>
+                  <div className="rounded-[22px] overflow-hidden border border-slate-800 bg-black">
+                    <img
+                      src={currentStep.screenshotUrl}
+                      alt={`${currentStep.personaId} Live Captured Evidence`}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                  <div className="w-24 h-1 bg-slate-700 rounded-full mx-auto mt-2" />
+                </div>
+              ) : (
+                <div className="w-full max-w-4xl mx-auto space-y-3">
+                  <img
+                    src={currentStep.screenshotUrl}
+                    alt={`${currentStep.personaId} Live Captured Evidence`}
+                    className="w-full h-auto rounded-xl border border-slate-800 shadow-2xl"
+                  />
+                </div>
+              )
             ) : (
               <div className="text-center space-y-3 p-8">
                 <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
