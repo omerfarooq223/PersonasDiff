@@ -270,7 +270,8 @@ async function generateAiInsights(
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+    const modelName = process.env['GEMINI_MODEL'] || 'gemini-2.0-flash';
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [];
 

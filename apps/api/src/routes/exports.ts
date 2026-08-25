@@ -280,4 +280,3 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
   app.get('/v1/exports/:id/raw', rawExportHandler);
   app.get('/api/v1/exports/:id/raw', rawExportHandler);
 }
-

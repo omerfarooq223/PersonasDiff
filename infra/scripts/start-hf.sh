@@ -13,6 +13,7 @@ echo "=== 3. Starting Redis ==="
 service redis-server start
 
 echo "=== 4. Launching Backend Services ==="
+SEED_ON_STARTUP=true \
 APP_ENV=production \
 API_HOST=0.0.0.0 \
 API_PORT=3000 \
