@@ -31,10 +31,23 @@ LISTEN_PORT="${PORT:-7860}"
 echo "=== 6. Starting Caddy Web Server & Reverse Proxy on Port ${LISTEN_PORT} ==="
 cat << EOF > /tmp/Caddyfile
 :${LISTEN_PORT} {
+    @cors_preflight method OPTIONS
+    handle @cors_preflight {
+        header Access-Control-Allow-Origin *
+        header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+        header Access-Control-Allow-Headers "Authorization, Content-Type, Idempotency-Key, X-Correlation-ID, X-Request-ID"
+        header Access-Control-Max-Age "86400"
+        respond "" 204
+    }
+
     handle /v1/* {
+        header Access-Control-Allow-Origin *
+        header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+        header Access-Control-Allow-Headers "Authorization, Content-Type, Idempotency-Key, X-Correlation-ID, X-Request-ID"
         reverse_proxy localhost:3000
     }
     handle /health/* {
+        header Access-Control-Allow-Origin *
         reverse_proxy localhost:3000
     }
     handle {

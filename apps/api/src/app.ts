@@ -39,7 +39,22 @@ export async function buildApp(
     timeWindow: config.rateLimitWindowMs,
   });
 
-  app.addHook('onRequest', async (_request, reply) => {
+  app.addHook('onRequest', async (request, reply) => {
+    void reply.header('Access-Control-Allow-Origin', '*');
+    void reply.header(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD',
+    );
+    void reply.header(
+      'Access-Control-Allow-Headers',
+      'Authorization, Content-Type, Idempotency-Key, X-Correlation-ID, X-Request-ID',
+    );
+
+    if (request.method === 'OPTIONS') {
+      void reply.status(204).send();
+      return;
+    }
+
     void reply.header(
       'Content-Security-Policy',
       "default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none';",
