@@ -458,7 +458,21 @@ async function executeRealPlaywrightRun(
   try {
     browser = await chromium.launch({
       headless: true,
-      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-extensions',
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--disable-sync',
+        '--mute-audio',
+        '--no-first-run',
+        '--disable-blink-features=AutomationControlled',
+        '--js-flags=--max-old-space-size=128',
+      ],
     });
 
     const getLangHeader = (locale?: string) => {
