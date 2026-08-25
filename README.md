@@ -295,24 +295,6 @@ npm run contracts:validate
 
 ---
 
-## 👨‍💻 Author & Developer
-
-<div align="center">
-
-### **Muhammad Umar Farooq**
-
-**AI Engineer**  
-_Department of Artificial Intelligence_  
-_University of Management and Technology, Lahore, Pakistan_
-
-[![Portfolio](https://img.shields.io/badge/Portfolio-omerfarooq223.github.io-00ADB5?style=for-the-badge&logo=google-chrome&logoColor=white)](https://omerfarooq223.github.io)
-[![GitHub](https://img.shields.io/badge/GitHub-omerfarooq223-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/omerfarooq223)
-[![Project Repo](https://img.shields.io/badge/Repository-ParallelWeb-6366F1?style=for-the-badge&logo=git&logoColor=white)](https://github.com/omerfarooq223/ParallelWeb)
-
-</div>
-
----
-
 ## 📚 Documentation Index
 
 | Topic                          | Reference Document                                                                 | Description                                                    |

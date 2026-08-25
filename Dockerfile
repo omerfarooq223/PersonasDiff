@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright/node:24-noble
+FROM node:24-bookworm
 
 # Install PostgreSQL, Redis, Caddy, sudo
 RUN apt-get update && apt-get install -y \
@@ -14,9 +14,9 @@ WORKDIR /app
 # Copy repository contents
 COPY . .
 
-# Install dependencies and Playwright Chromium
+# Install dependencies and Playwright Chromium with browser dependencies
 RUN npm install
-RUN npx playwright install chromium
+RUN npx playwright install chromium --with-deps
 
 # Make start script executable
 RUN chmod +x infra/scripts/start-hf.sh
