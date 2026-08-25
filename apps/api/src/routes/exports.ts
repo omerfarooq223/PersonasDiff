@@ -1,6 +1,7 @@
 import {
   createExportRecord,
   findRunById,
+  findUserByToken,
   getExportById,
   getStepEvidenceByRun,
   insertAuditEvent,
@@ -9,7 +10,7 @@ import {
 import { ExportBuilder } from '@ai-parallel-web/domain';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-import { buildProblem, requireAuth } from '../auth.js';
+import { buildProblem, requireAuth, toAuthenticatedUser } from '../auth.js';
 import type { AppDependencies } from '../dependencies.js';
 
 export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies): void {
@@ -206,11 +207,9 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
 
   // GET /v1/exports/:id/raw & /api/v1/exports/:id/raw
   const rawExportHandler = async (
-    request: FastifyRequest<{ Params: { id: string } }>,
+    request: FastifyRequest<{ Params: { id: string }; Querystring: { token?: string } }>,
     reply: FastifyReply,
   ) => {
-    const user = requireAuth(request, reply);
-    if (!user) return;
     if (!deps.db) {
       return reply.status(503).send(
         buildProblem({
@@ -223,8 +222,28 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
       );
     }
 
+    let authUser = request.authUser;
+    if (!authUser && request.query?.token) {
+      const u = await findUserByToken(deps.db, request.query.token);
+      if (u) {
+        authUser = toAuthenticatedUser(u);
+      }
+    }
+
+    if (!authUser) {
+      return reply.status(401).send(
+        buildProblem({
+          title: 'Unauthorized',
+          detail: 'A valid bearer token or ?token parameter is required.',
+          requestId: request.id,
+          status: 401,
+          type: 'unauthorized',
+        }),
+      );
+    }
+
     const exportId = request.params.id;
-    const exportRecord = await getExportById(deps.db, user.tenantId, exportId);
+    const exportRecord = await getExportById(deps.db, authUser.tenantId, exportId);
 
     if (!exportRecord) {
       return reply.status(404).send(
@@ -238,7 +257,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
       );
     }
 
-    const run = await findRunById(deps.db, user.tenantId, exportRecord.runId);
+    const run = await findRunById(deps.db, authUser.tenantId, exportRecord.runId);
     const stepEvidences = await getStepEvidenceByRun(deps.db, exportRecord.runId);
     const steps = stepEvidences.map((e) => ({
       stepIndex: e.stepIndex,
@@ -254,7 +273,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
     const exportBundle = exportBuilder.buildExportBundle(
       {
         id: run?.id ?? exportRecord.runId,
-        tenantId: user.tenantId,
+        tenantId: authUser.tenantId,
         status: run?.status ?? 'completed',
         createdAt: run?.createdAt ?? exportRecord.createdAt,
         completedAt: run?.completedAt ?? null,

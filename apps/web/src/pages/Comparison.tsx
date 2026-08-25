@@ -303,13 +303,29 @@ export default function Comparison() {
       setExportingFormat(format);
       const record = await api.createExport(id, format);
       const download = await api.getExportDownload(record.id);
+      const token =
+        (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null) ||
+        'pw-admin-token-dev-only-0001';
 
+      const response = await fetch(download.downloadUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Export download failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = download.downloadUrl;
+      link.href = blobUrl;
       link.download = `audit-evidence-${id}.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error('Export failed:', err);
     } finally {

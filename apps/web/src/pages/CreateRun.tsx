@@ -254,11 +254,8 @@ export default function CreateRun() {
       const payload: CreateRunRequest = {
         personaVersionIds: selectedPersonaIds,
         customSurfaceUrl: targetUrl.trim(),
+        ...(matchedPreset?.label ? { customSurfaceName: matchedPreset.label } : {}),
       };
-      if (surfaceId && journeyVersionId) {
-        payload.surfaceId = surfaceId;
-        payload.journeyVersionId = journeyVersionId;
-      }
       createRunMutation.mutate(payload);
     }
   };
@@ -780,7 +777,11 @@ export default function CreateRun() {
         {createRunMutation.isError && (
           <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-center space-x-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span>Failed to launch comparison run. Please try again.</span>
+            <span>
+              {createRunMutation.error instanceof Error
+                ? createRunMutation.error.message
+                : 'Failed to launch comparison run. Please try again.'}
+            </span>
           </div>
         )}
       </form>

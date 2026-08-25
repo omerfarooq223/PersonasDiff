@@ -1129,25 +1129,29 @@ export function registerRunRoutes(
 
       let resolvedSurfaceId = body.surfaceId;
       let resolvedJourneyVersionId = body.journeyVersionId;
-      if ((!resolvedSurfaceId || !resolvedJourneyVersionId) && body.customSurfaceUrl) {
-        const customUrl = new URL(body.customSurfaceUrl);
-        const configuration = await ensureLiveAuditConfiguration(deps.db, {
-          contentHash: crypto
-            .createHash('sha256')
-            .update('navigate|wait-for-load|screenshot|extract-and-diff:v1')
-            .digest('hex'),
-          displayName: body.customSurfaceName?.trim() || customUrl.hostname,
-          origin: customUrl.origin,
-          steps: [
-            { id: 'navigate', type: 'navigate' },
-            { id: 'wait-for-load', type: 'wait' },
-            { id: 'screenshot', type: 'screenshot' },
-            { id: 'extract-and-diff', type: 'extract' },
-          ],
-          tenantId: user.tenantId,
-        });
-        resolvedSurfaceId = configuration.surface.id;
-        resolvedJourneyVersionId = configuration.journey.id;
+      if (body.customSurfaceUrl) {
+        try {
+          const customUrl = new URL(body.customSurfaceUrl);
+          const configuration = await ensureLiveAuditConfiguration(deps.db, {
+            contentHash: crypto
+              .createHash('sha256')
+              .update(`navigate|wait-for-load|screenshot|extract-and-diff:v1:${customUrl.origin}`)
+              .digest('hex'),
+            displayName: body.customSurfaceName?.trim() || customUrl.hostname,
+            origin: customUrl.origin,
+            steps: [
+              { id: 'navigate', type: 'navigate' },
+              { id: 'wait-for-load', type: 'wait' },
+              { id: 'screenshot', type: 'screenshot' },
+              { id: 'extract-and-diff', type: 'extract' },
+            ],
+            tenantId: user.tenantId,
+          });
+          resolvedSurfaceId = configuration.surface.id;
+          resolvedJourneyVersionId = configuration.journey.id;
+        } catch {
+          // ignore malformed custom url
+        }
       }
 
       if (!resolvedSurfaceId || !resolvedJourneyVersionId) {
