@@ -9,6 +9,16 @@ export function registerHealthRoutes(
   config: ApiConfig,
   deps: AppDependencies,
 ): void {
+  app.route({
+    method: ['GET', 'HEAD'],
+    url: '/',
+    handler: async () => ({
+      service: 'personadiff-api',
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    }),
+  });
+
   app.get('/health/live', async () => ({
     service: 'api',
     status: 'ok',

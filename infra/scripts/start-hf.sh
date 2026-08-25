@@ -30,6 +30,11 @@ FIXTURE_PORT=4300 npm run start --workspace=@ai-parallel-web/fixture &
 LISTEN_PORT="${PORT:-7860}"
 echo "=== 6. Starting Caddy Web Server & Reverse Proxy on Port ${LISTEN_PORT} ==="
 cat << EOF > /tmp/Caddyfile
+{
+    admin off
+    auto_https off
+}
+
 :${LISTEN_PORT} {
     @cors_preflight method OPTIONS
     handle @cors_preflight {
