@@ -12,7 +12,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace=@ai-parallel-web/contracts --workspace=@ai-parallel-web/domain --workspace=@ai-parallel-web/auth --workspace=@ai-parallel-web/db --workspace=@ai-parallel-web/storage && npm run build --workspace=@ai-parallel-web/capture --workspace=@ai-parallel-web/comparison --workspace=@ai-parallel-web/observability && npm run build --workspaces --if-present",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run contracts:validate",
     "clean": "npm run clean --workspaces --if-present",
     "contracts:validate": "redocly lint --config config/tooling/redocly.yaml packages/contracts/openapi/openapi.yaml && vitest run --config config/tooling/vitest.config.ts tests/contract/schemas.test.ts",

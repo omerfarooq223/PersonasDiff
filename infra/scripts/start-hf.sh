@@ -18,10 +18,7 @@ done
 echo "=== 4. Starting Redis ==="
 service redis-server start
 
-echo "=== 5. Building Workspaces ==="
-npm run build
-
-echo "=== 6. Launching Backend Services ==="
+echo "=== 5. Launching Backend Services ==="
 APP_ENV=production \
 API_HOST=0.0.0.0 \
 API_PORT=3000 \
@@ -32,15 +29,16 @@ APPROVED_SURFACE_ORIGIN=http://localhost:4300 \
 APPROVED_PATH_PREFIXES=/fixture,/robots.txt \
 npm run start --workspace=@ai-parallel-web/api &
 
-echo "=== 7. Launching Local Target Fixture Service ==="
+echo "=== 6. Launching Local Target Fixture Service ==="
 FIXTURE_PORT=4300 npm run start --workspace=@ai-parallel-web/fixture &
 
-echo "=== 8. Launching Web UI ==="
+echo "=== 7. Launching Web UI ==="
 npm run dev --workspace=@ai-parallel-web/web -- --host 0.0.0.0 --port 5173 &
 
-echo "=== 9. Starting Caddy Reverse Proxy on Port 7860 ==="
-cat << 'EOF' > /tmp/Caddyfile
-:7860 {
+LISTEN_PORT="${PORT:-7860}"
+echo "=== 8. Starting Caddy Reverse Proxy on Port ${LISTEN_PORT} ==="
+cat << EOF > /tmp/Caddyfile
+:${LISTEN_PORT} {
     reverse_proxy /v1/* localhost:3000
     reverse_proxy /health/* localhost:3000
     reverse_proxy * localhost:5173

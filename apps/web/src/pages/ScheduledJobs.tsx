@@ -211,9 +211,19 @@ function CreateJobModal({
   );
   const [intervalMinutes, setIntervalMinutes] = useState(360);
   const [surfaceId, setSurfaceId] = useState(surfaces[0]?.id ?? '');
-  const journeyVersionId = journeys[0]?.id ?? '';
+  const matchingJourney = journeys.find((j) => j.surfaceId === surfaceId) ?? journeys[0];
+  const [journeyVersionId, setJourneyVersionId] = useState(matchingJourney?.id ?? '');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Sync journey when surface changes
+  const handleSurfaceChange = (newSurfaceId: string) => {
+    setSurfaceId(newSurfaceId);
+    const newMatchingJourney = journeys.find((j) => j.surfaceId === newSurfaceId) ?? journeys[0];
+    if (newMatchingJourney) {
+      setJourneyVersionId(newMatchingJourney.id);
+    }
+  };
 
   const togglePersona = (id: string) =>
     setSelectedPersonaIds((prev) =>
@@ -234,13 +244,14 @@ function CreateJobModal({
       return;
     }
     const finalSurfaceId = surfaceId || surfaces[0]?.id;
-    const finalJourneyId = journeyVersionId || journeys[0]?.id;
+    const finalJourneyId = journeyVersionId || matchingJourney?.id || journeys[0]?.id;
     if (!finalSurfaceId || !finalJourneyId) {
       setError('A backend surface and journey are required.');
       return;
     }
     try {
       setSubmitting(true);
+      setError('');
       await api.createScheduledJob({
         intervalMinutes,
         journeyVersionId: finalJourneyId,
@@ -251,8 +262,12 @@ function CreateJobModal({
       });
       onCreated();
       onClose();
-    } catch {
-      setError('Failed to create monitor. Check API connection.');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'detail' in err
+          ? (err as { detail: string }).detail
+          : 'Failed to create monitor. Please check your inputs.';
+      setError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -360,7 +375,7 @@ function CreateJobModal({
               </label>
               <select
                 value={surfaceId}
-                onChange={(e) => setSurfaceId(e.target.value)}
+                onChange={(e) => handleSurfaceChange(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
               >
                 {surfaces.map((s) => (

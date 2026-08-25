@@ -180,12 +180,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
         );
       }
 
-      let downloadUrl = `/api/v1/exports/${exportId}/raw`;
-      if (deps.storage) {
-        downloadUrl = await deps.storage.getSignedUrl(exportRecord.storageKey, {
-          expiresInSeconds: 900,
-        });
-      }
+      const downloadUrl = `/v1/exports/${exportId}/raw`;
 
       await insertAuditEvent(deps.db, {
         tenantId: user.tenantId,
@@ -208,4 +203,81 @@ export function registerExportRoutes(app: FastifyInstance, deps: AppDependencies
       });
     },
   );
+
+  // GET /v1/exports/:id/raw & /api/v1/exports/:id/raw
+  const rawExportHandler = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    const user = requireAuth(request, reply);
+    if (!user) return;
+    if (!deps.db) {
+      return reply.status(503).send(
+        buildProblem({
+          title: 'Service Unavailable',
+          detail: 'Database is not connected.',
+          requestId: request.id,
+          status: 503,
+          type: 'service_unavailable',
+        }),
+      );
+    }
+
+    const exportId = request.params.id;
+    const exportRecord = await getExportById(deps.db, user.tenantId, exportId);
+
+    if (!exportRecord) {
+      return reply.status(404).send(
+        buildProblem({
+          title: 'Not Found',
+          detail: `Export with ID ${exportId} was not found.`,
+          requestId: request.id,
+          status: 404,
+          type: 'not_found',
+        }),
+      );
+    }
+
+    const run = await findRunById(deps.db, user.tenantId, exportRecord.runId);
+    const stepEvidences = await getStepEvidenceByRun(deps.db, exportRecord.runId);
+    const steps = stepEvidences.map((e) => ({
+      stepIndex: e.stepIndex,
+      ...(e.stepId ? { stepId: e.stepId } : {}),
+      actionType: 'navigate',
+      status: e.overallEvidenceState,
+      ...(e.finalUrl ? { finalUrl: e.finalUrl } : {}),
+      durationMs: Number(BigInt(e.monotonicDurationNs || '0')) / 1000000,
+      diffScore: 0,
+      payload: e.extractionPayload ?? {},
+    }));
+
+    const exportBundle = exportBuilder.buildExportBundle(
+      {
+        id: run?.id ?? exportRecord.runId,
+        tenantId: user.tenantId,
+        status: run?.status ?? 'completed',
+        createdAt: run?.createdAt ?? exportRecord.createdAt,
+        completedAt: run?.completedAt ?? null,
+        ...(run?.surfaceId ? { surfaceId: run.surfaceId } : {}),
+        ...(run?.journeyVersionId ? { journeyVersionId: run.journeyVersionId } : {}),
+      },
+      steps,
+      [],
+    );
+    const fileContent =
+      exportRecord.format === 'csv' ? exportBundle.csvContent : exportBundle.jsonContent;
+
+    const contentType = exportRecord.format === 'csv' ? 'text/csv' : 'application/json';
+    return reply
+      .header('Content-Type', contentType)
+      .header(
+        'Content-Disposition',
+        `attachment; filename="audit-export-${exportId}.${exportRecord.format}"`,
+      )
+      .send(fileContent);
+  };
+
+  app.get('/v1/exports/:id/raw', rawExportHandler);
+  app.get('/api/v1/exports/:id/raw', rawExportHandler);
 }
+
