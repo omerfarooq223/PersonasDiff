@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/v1/:match*",
+      "destination": "https://personadiff.onrender.com/v1/:match*"
+    },
+    {
+      "source": "/health/:match*",
+      "destination": "https://personadiff.onrender.com/health/:match*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
