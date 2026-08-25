@@ -1262,16 +1262,18 @@ export function registerRunRoutes(
         tenantId: user.tenantId,
       });
 
-      // Execute real Playwright browser capture synchronously across all selected personas
-      const completedRun = await executeTrackedPlaywrightRun(
+      // Execute Playwright browser capture asynchronously in background to prevent HTTP 502 proxy timeouts
+      void executeTrackedPlaywrightRun(
         deps.db,
         user.tenantId,
         run.id,
         targetUrl,
         selectedPersonas,
-      );
+      ).catch((err) => {
+        request.log.error({ err }, 'Background Playwright audit run failed');
+      });
 
-      const responseBody = publicRun({ ...completedRun, targetUrl });
+      const responseBody = publicRun({ ...run, targetUrl });
       await saveIdempotencyRecord(
         deps.db,
         user.tenantId,
@@ -1401,6 +1403,22 @@ export function registerRunRoutes(
     const stored = runComparisonsStore.get(request.params.id);
     if (stored) {
       return reply.send(stored);
+    }
+
+    if (deps.db) {
+      const run = await findRunById(deps.db, user.tenantId, request.params.id);
+      if (run) {
+        return reply.send({
+          id: run.id,
+          status: run.status,
+          correlationId: run.correlationId,
+          createdAt: run.createdAt,
+          metrics: { diffScore: 0, layoutShift: 0, textDifferenceRatio: 0 },
+          personaResults: [],
+          discrepancies: [],
+          insights: ['Parallel audit in progress across browser workers...'],
+        });
+      }
     }
 
     return reply.status(404).send(

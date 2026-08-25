@@ -341,7 +341,13 @@ export default function Comparison() {
     }
   };
 
-  if (isLoading) {
+  if (
+    isLoading ||
+    comparisonData?.status === 'queued' ||
+    comparisonData?.status === 'running' ||
+    (!comparisonData?.screenshots?.personaA &&
+      (!comparisonData?.personaResults || comparisonData.personaResults.length === 0))
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 animate-in fade-in duration-300">
         <div className="relative">

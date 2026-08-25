@@ -106,6 +106,7 @@ export interface AiInsights {
 export interface ComparisonResult {
   comparisonId: string;
   runId: string;
+  status?: string;
   metricVersion: string;
   comparedPersonas: string[];
   timestampUtc: string;
